@@ -1,0 +1,59 @@
+# Node.js dependencies
+/node_modules
+**/node_modules
+
+# Build output
+/dist
+**/dist
+/build
+**/build
+/.next
+/.vercel
+/out
+/.turbo
+**/.turbo
+
+# pnpm store & lock files
+.pnpm-store
+pnpm-lock.yaml
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+*.log
+
+# Env files (keep secrets out of git!)
+.env
+.env.local
+.env.*.local
+
+# VSCode settings
+.vscode/
+
+# MacOS files
+.DS_Store
+
+# Coverage reports
+coverage/
+**/coverage/
+
+# Typescript cache
+*.tsbuildinfo
+
+# Jest cache
+/jest-cache
+
+# Misc
+*.tgz
+
+# Optional: Ignore .idea for JetBrains IDEs
+.idea/
+
+# Optional: Ignore output of Hono or other server dist if compiled there
+/apps/backend/dist
+/apps/frontend/dist
+
+# Optional: Ignore public build files if you want (depending on your setup)
+/public/build

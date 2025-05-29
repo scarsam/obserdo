@@ -1,0 +1,17 @@
+{
+  "name": "db",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./dist/schema.js",
+  "types": "./dist/schema.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc"
+  },
+  "exports": {
+    "./types": "./dist/types.d.ts",
+    "./schema": "./dist/schema.js"
+  }
+}
