@@ -4,7 +4,7 @@ import { z } from "zod/v4";
 import { db } from "../db/index.js";
 import { auth } from "../lib/auth.js";
 
-import { todos as todosSchema } from "db/schema";
+import { todos as todosSchema } from "../db/schema.js";
 import { eq } from "drizzle-orm";
 
 const todoSchema = z.object({
