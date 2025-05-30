@@ -4,22 +4,25 @@ import { Button } from "@/components/ui/button";
 import { useEffect } from "react";
 import { baseUrl } from "@/lib/env";
 import type { Todo } from "db/types";
+import { authClient } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
   component: App,
 });
 
 function App() {
-  const fetchData = async () => {
-    const res = await fetch(baseUrl);
-    const todos: Todo[] = await res.json();
+  // const { signIn } = authClient;
 
-    console.log("Fetched todos:", todos);
-  };
+  // const fetchData = async () => {
+  //   const res = await fetch(baseUrl);
+  //   const todos: Todo[] = await res.json();
 
-  useEffect(() => {
-    fetchData();
-  }, []);
+  //   console.log("Fetched todos:", todos);
+  // };
+
+  // useEffect(() => {
+  //   fetchData();
+  // }, []);
 
   return (
     <div className="text-center">
@@ -48,6 +51,7 @@ function App() {
         >
           Learn TanStack
         </a>
+
         <Button>This is a ShadCN Button</Button>
       </header>
     </div>
