@@ -8,6 +8,10 @@ export const auth = betterAuth({
     provider: "pg",
   }),
   plugins: [anonymous()],
+  crossSubDomainCookies: {
+    enabled: true,
+    domain: ".onrender.com", // 👈 NOTE: leading dot required
+  },
   trustedOrigins: [
     "https://obserdo.onrender.com",
     "https://obserdo-backend.onrender.com",
