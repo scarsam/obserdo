@@ -2,6 +2,7 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { db } from "./db/index.js";
+import { auth } from "./lib/auth.js";
 
 const app = new Hono();
 
@@ -17,6 +18,8 @@ app.use(
     credentials: true,
   })
 );
+
+app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 
 app.get("/", async (c) => {
   const todos = await db.query.todos.findMany();

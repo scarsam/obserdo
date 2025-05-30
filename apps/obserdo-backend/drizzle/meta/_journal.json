@@ -15,6 +15,13 @@
       "when": 1748611459509,
       "tag": "0001_eager_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1748614467446,
+      "tag": "0002_add-is-anonymous-to-user",
+      "breakpoints": true
     }
   ]
 }
