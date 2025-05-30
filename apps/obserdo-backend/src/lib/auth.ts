@@ -12,6 +12,12 @@ export const auth = betterAuth({
     enabled: true,
     domain: ".onrender.com", // 👈 NOTE: leading dot required
   },
+  defaultCookieAttributes: {
+    secure: true,
+    httpOnly: true,
+    sameSite: "none", // Allows CORS-based cookie sharing across subdomains
+    partitioned: true, // New browser standards will mandate this for foreign cookies
+  },
   trustedOrigins: [
     "https://obserdo.onrender.com",
     "https://obserdo-backend.onrender.com",
