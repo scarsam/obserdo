@@ -7,7 +7,7 @@
   ],
   "scripts": {
     "dev": "pnpm --filter obserdo-frontend dev & pnpm --filter obserdo-backend dev",
-    "packages:build": "pnpm --filter db build",
+    "generate": "pnpm --filter db build",
     "db": "pnpm --filter obserdo-backend db:studio"
   },
   "dependencies": {

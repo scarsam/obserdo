@@ -2,9 +2,10 @@ import { serve } from "@hono/node-server";
 import { Hono } from "hono";
 import { db } from "./db/index.js";
 import { auth } from "./lib/auth.js";
-import { todos } from "db/schema";
+import { user as userSchema, todos as todosSchema } from "db/schema";
 import { corsMiddleware } from "./middleware/cors.js";
 import { authMiddleware } from "./middleware/auth.js";
+import { eq } from "drizzle-orm";
 
 const app = new Hono<{
   Variables: {
@@ -27,7 +28,10 @@ app.get("/api/todos", async (c) => {
     return c.json({ error: "Unauthorized" }, 401);
   }
 
-  const todos = await db.query.todos.findMany();
+  const todos = await db.query.todos.findMany({
+    where: eq(todosSchema.userId, user.id),
+  });
+
   return c.json(todos);
 });
 
@@ -41,10 +45,11 @@ app.post("/api/todos", async (c) => {
   const newTodo = await c.req.json();
 
   const createdTodo = await db
-    .insert(todos)
+    .insert(todosSchema)
     .values({
       name: newTodo.name,
       description: newTodo.description,
+      userId: user.id,
     })
     .returning();
 
