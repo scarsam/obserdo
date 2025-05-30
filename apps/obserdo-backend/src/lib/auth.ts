@@ -9,10 +9,10 @@ export const auth = betterAuth({
   }),
   plugins: [anonymous()],
   advanced: {
-    crossSubDomainCookies: {
-      enabled: true,
-      domain: ".onrender.com", // 👈 NOTE: leading dot required
-    },
+    // crossSubDomainCookies: {
+    //   enabled: true,
+    //   domain: ".onrender.com", // 👈 NOTE: leading dot required
+    // },
     defaultCookieAttributes: {
       secure: true,
       httpOnly: true,
