@@ -20,6 +20,7 @@ export const todosApp = new Hono<{
 }>()
   .get("/", async (c) => {
     const user = c.get("user");
+
     if (!user) return c.json({ error: "Unauthorized" }, 401);
 
     const todos = await db.query.todos.findMany({
@@ -30,6 +31,7 @@ export const todosApp = new Hono<{
   })
   .post("/", zValidator("json", todoSchema), async (c) => {
     const user = c.get("user");
+
     if (!user) return c.json({ error: "Unauthorized" }, 401);
 
     const { name, description } = c.req.valid("json");
