@@ -27,7 +27,7 @@ function App() {
   const handleCreate = () => {
     createTodoMutation.mutate({
       name: title,
-      description: description || null,
+      description: description,
     });
     setTitle("");
     setDescription("");
