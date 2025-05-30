@@ -22,6 +22,13 @@
       "when": 1748614467446,
       "tag": "0002_add-is-anonymous-to-user",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1748622455661,
+      "tag": "0003_puzzling_chameleon",
+      "breakpoints": true
     }
   ]
 }
