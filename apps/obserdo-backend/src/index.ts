@@ -1,29 +1,43 @@
 import { serve } from "@hono/node-server";
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { db } from "./db/index.js";
 import { auth } from "./lib/auth.js";
 import { todos } from "db/schema";
+import { corsMiddleware } from "./middleware/cors.js";
+import { authMiddleware } from "./middleware/auth.js";
 
-const app = new Hono();
+const app = new Hono<{
+  Variables: {
+    user: typeof auth.$Infer.Session.user | null;
+    session: typeof auth.$Infer.Session.session | null;
+  };
+}>();
 
-// ✅ Apply CORS middleware before defining routes
-app.use(
-  "*",
-  cors({
-    origin: ["http://localhost:3000", "https://obserdo.onrender.com"], // or "*" in dev if needed
-    credentials: true,
-  })
-);
+// Middleware setup
+app.use("*", corsMiddleware);
+app.use("*", authMiddleware);
 
+// Auth handlers
 app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 
 app.get("/api/todos", async (c) => {
+  const user = c.get("user");
+
+  if (!user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
   const todos = await db.query.todos.findMany();
   return c.json(todos);
 });
 
 app.post("/api/todos", async (c) => {
+  const user = c.get("user");
+
+  if (!user) {
+    return c.json({ error: "Unauthorized" }, 401);
+  }
+
   const newTodo = await c.req.json();
 
   const createdTodo = await db
