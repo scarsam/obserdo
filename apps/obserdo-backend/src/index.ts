@@ -3,6 +3,7 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { db } from "./db/index.js";
 import { auth } from "./lib/auth.js";
+import { todos } from "db/schema";
 
 const app = new Hono();
 
@@ -20,6 +21,20 @@ app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 app.get("/api/todos", async (c) => {
   const todos = await db.query.todos.findMany();
   return c.json(todos);
+});
+
+app.post("/api/todos", async (c) => {
+  const newTodo = await c.req.json();
+
+  const createdTodo = await db
+    .insert(todos)
+    .values({
+      name: newTodo.name,
+      description: newTodo.description,
+    })
+    .returning();
+
+  return c.json(createdTodo);
 });
 
 serve(
