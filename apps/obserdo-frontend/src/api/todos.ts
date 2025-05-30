@@ -1,21 +1,34 @@
 import { baseUrl } from "@/lib/env";
-import type { Todo } from "db/types";
 
-export async function fetchTodoList(): Promise<Todo[]> {
-  const res = await fetch(`${baseUrl}api/todos`, { credentials: "include" });
+import type { AppType } from "obserdo-backend/types";
+import { hc, type InferRequestType } from "hono/client";
+
+const client = hc<AppType>(baseUrl, {
+  init: {
+    credentials: "include",
+  },
+});
+
+const $post = client.api.todos.$post;
+type CreateTodoTypes = InferRequestType<typeof $post>["json"];
+
+export async function fetchTodoList() {
+  const res = await client.api.todos.$get();
+
   if (!res.ok) throw new Error("Failed to fetch todos");
+
   return res.json();
 }
 
-export async function createTodo(
-  newTodo: Pick<Todo, "name" | "description">
-): Promise<Todo> {
-  const res = await fetch(`${baseUrl}api/todos`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(newTodo),
-    credentials: "include",
+export async function createTodo(newTodo: CreateTodoTypes) {
+  const res = await client.api.todos.$post({
+    json: {
+      name: newTodo.name,
+      description: newTodo.description,
+    },
   });
+
   if (!res.ok) throw new Error("Failed to create todo");
+
   return res.json();
 }

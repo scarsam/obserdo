@@ -1,6 +1,6 @@
 import { betterAuth } from "better-auth";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
-import { db } from "../db/index.js"; // your drizzle instance
+import { db } from "../db/index.js";
 import { anonymous } from "better-auth/plugins";
 
 // console.log("Here", db);

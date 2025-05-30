@@ -1,6 +1,9 @@
 {
   "name": "obserdo-backend",
   "type": "module",
+  "exports": {
+    "./types": "./src/index.ts"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
@@ -11,11 +14,12 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.14.3",
+    "@hono/zod-validator": "^0.7.0",
     "dotenv": "^16.5.0",
     "drizzle-orm": "^0.44.0",
     "hono": "^4.7.10",
     "pg": "^8.16.0",
-    "db": "workspace:*"
+    "zod": "^3.25.42"
   },
   "devDependencies": {
     "@types/node": "^20.11.17",
