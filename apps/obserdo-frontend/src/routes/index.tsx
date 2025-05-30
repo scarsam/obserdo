@@ -1,59 +1,60 @@
 import { createFileRoute } from "@tanstack/react-router";
-import logo from "../logo.svg";
-import { Button } from "@/components/ui/button";
-import { useEffect } from "react";
-import { baseUrl } from "@/lib/env";
-import type { Todo } from "db/types";
-import { authClient } from "@/lib/auth";
+import { useState } from "react";
+import { useCreateTodo, useTodos } from "@/hooks/useTodos";
 
 export const Route = createFileRoute("/")({
   component: App,
 });
 
 function App() {
-  // const { signIn } = authClient;
+  const { data, isLoading, isError, error } = useTodos();
+  const createTodoMutation = useCreateTodo();
 
-  // const fetchData = async () => {
-  //   const res = await fetch(baseUrl);
-  //   const todos: Todo[] = await res.json();
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
 
-  //   console.log("Fetched todos:", todos);
-  // };
+  if (isLoading) return <span>Loading...</span>;
+  if (isError) return <span>Error: {(error as Error).message}</span>;
 
-  // useEffect(() => {
-  //   fetchData();
-  // }, []);
+  const handleCreate = () => {
+    createTodoMutation.mutate({
+      name: title,
+      description: description ?? null,
+    });
+    setTitle("");
+    setDescription("");
+  };
 
   return (
-    <div className="text-center">
-      <header className="min-h-screen flex flex-col items-center justify-center bg-[#282c34] text-white text-[calc(10px+2vmin)]">
-        <img
-          src={logo}
-          className="h-[40vmin] pointer-events-none animate-[spin_20s_linear_infinite]"
-          alt="logo"
-        />
-        <p>
-          Edit <code>src/routes/index.tsx</code> and save to reload.
-        </p>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-        <a
-          className="text-[#61dafb] hover:underline"
-          href="https://tanstack.com"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn TanStack
-        </a>
+    <div className="bg-black-950">
+      {createTodoMutation.isPending && <p>Creating...</p>}
+      {createTodoMutation.isError && (
+        <p>Error creating todo: {createTodoMutation.error?.message}</p>
+      )}
+      {createTodoMutation.isSuccess && <p>Created!</p>}
 
-        <Button>This is a ShadCN Button</Button>
-      </header>
+      <ul>
+        {data!.map((todo) => (
+          <li key={todo.id}>{todo.name}</li>
+        ))}
+      </ul>
+
+      <input
+        value={title}
+        onChange={(e) => setTitle(e.target.value)}
+        placeholder="New todo"
+      />
+      <input
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Description"
+      />
+      <button
+        onClick={handleCreate}
+        disabled={createTodoMutation.isPending || title.trim() === ""}
+      >
+        Add Todo
+      </button>
     </div>
   );
 }

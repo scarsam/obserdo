@@ -10,4 +10,5 @@ export const auth = betterAuth({
     provider: "pg", // or "mysql", "sqlite"
   }),
   plugins: [anonymous()],
+  trustedOrigins: ["http://localhost:3000", "http://localhost:3001"],
 });

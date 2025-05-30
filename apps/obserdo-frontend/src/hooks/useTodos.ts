@@ -1,5 +1,6 @@
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useMutation } from "@tanstack/react-query";
 import { fetchTodoList, createTodo } from "@/api/todos";
+import { queryClient } from "@/lib/react-query";
 
 // Queries
 export function useTodos() {
@@ -8,8 +9,6 @@ export function useTodos() {
 
 // Mutations
 export function useCreateTodo() {
-  const queryClient = useQueryClient();
-
   return useMutation({
     mutationFn: createTodo,
     onSuccess: () => {

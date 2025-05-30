@@ -8,7 +8,7 @@ import { routeTree } from "./routeTree.gen";
 
 import "./styles.css";
 import reportWebVitals from "./reportWebVitals.ts";
-import { queryClient } from "./lib/react-query.ts";
+import { queryClient } from "@/lib/react-query";
 
 // Create a new router instance
 const router = createRouter({

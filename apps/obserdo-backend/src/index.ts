@@ -10,20 +10,16 @@ const app = new Hono();
 app.use(
   "*",
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://obserdo.up.railway.app",
-      "https://obserdo.onrender.com",
-    ], // or "*" in dev if needed
+    origin: ["http://localhost:3000", "https://obserdo.onrender.com"], // or "*" in dev if needed
     credentials: true,
   })
 );
 
 app.on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw));
 
-app.get("/", async (c) => {
+app.get("/api/todos", async (c) => {
   const todos = await db.query.todos.findMany();
-  return c.json({ todos });
+  return c.json(todos);
 });
 
 serve(
