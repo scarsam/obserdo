@@ -8,6 +8,13 @@
       "when": 1748599764678,
       "tag": "0000_lucky_luminals",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1748611459509,
+      "tag": "0001_eager_shooting_star",
+      "breakpoints": true
     }
   ]
 }
