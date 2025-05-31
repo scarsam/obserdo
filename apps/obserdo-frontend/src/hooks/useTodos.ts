@@ -1,29 +1,22 @@
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { fetchTodoList, createTodo, createTask } from "@/api/todos";
-import { queryClient } from "@/lib/react-query";
-
-// Queries
-export function useTodos() {
-  return useQuery({ queryKey: ["todos"], queryFn: fetchTodoList });
-}
+import { useMutation } from "@tanstack/react-query";
+import { createTodo, createTask } from "@/api/todos";
+import { useRouter } from "@tanstack/react-router";
 
 // Mutations
 export function useCreateTodo() {
+  const router = useRouter();
+
   return useMutation({
     mutationFn: createTodo,
-    onSuccess: () => {
-      // Invalidate and refetch todos after mutation
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => router.invalidate(),
   });
 }
 
 export function useCreateTask() {
+  const router = useRouter();
+
   return useMutation({
     mutationFn: createTask,
-    onSuccess: () => {
-      // Invalidate and refetch todos after mutation
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-    },
+    onSuccess: () => router.invalidate(),
   });
 }

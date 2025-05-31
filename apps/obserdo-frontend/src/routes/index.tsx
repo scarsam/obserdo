@@ -1,52 +1,14 @@
-import { createFileRoute } from "@tanstack/react-router";
-import { useCreateTask, useCreateTodo, useTodos } from "@/hooks/useTodos";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useForm } from "@tanstack/react-form";
-import { z } from "zod/v4";
-import { Label } from "@/components/ui/label";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { CreateTodoForm } from "@/components/createTodo";
-import { CreateTaskForm } from "@/components/createTask";
+import { fetchTodos } from "@/api/todos";
 
 export const Route = createFileRoute("/")({
+  loader: () => fetchTodos(),
   component: App,
 });
 
-const todosSchema = z.object({
-  title: z.string().min(1, "Title is required"),
-  description: z.string(),
-});
-
 function App() {
-  const { data, isLoading, isError, error } = useTodos();
-  const createTodoMutation = useCreateTodo();
-  const createTaskMutation = useCreateTask();
-
-  const form = useForm({
-    defaultValues: {
-      title: "",
-      description: "",
-    },
-    validators: {
-      onChange: todosSchema,
-    },
-    onSubmit: ({ value }) => {
-      createTodoMutation.mutate({
-        name: value.title,
-        description: value.description,
-      });
-      form.reset();
-    },
-  });
-
-  if (isLoading)
-    return <p className="text-center py-10 text-gray-400">Loading...</p>;
-  if (isError)
-    return (
-      <p className="text-center py-10 text-red-500">
-        Error: {(error as Error).message}
-      </p>
-    );
+  const todos = Route.useLoaderData();
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-900 rounded-lg shadow-md text-gray-100 min-h-screen">
@@ -54,26 +16,17 @@ function App() {
         My Todos
       </h1>
 
-      {createTodoMutation.isPending && (
-        <p className="mb-4 text-blue-400">Creating...</p>
-      )}
-      {createTodoMutation.isError && (
-        <p className="mb-4 text-red-500">
-          Error creating todo: {createTodoMutation.error?.message}
-        </p>
-      )}
-      {createTodoMutation.isSuccess && (
-        <p className="mb-4 text-green-400">Created successfully!</p>
-      )}
-
       <ul className="mb-6 space-y-3">
-        {data && data.length > 0 ? (
-          data.map((todo) => (
+        {todos && todos.length > 0 ? (
+          todos.map((todo) => (
             <>
               <li
                 key={todo.id}
                 className="p-4 bg-gray-800 rounded-md shadow-sm hover:bg-gray-700 transition"
               >
+                <Link to="/todos/$todoId" params={{ todoId: `${todo.id}` }}>
+                  {todo.id}
+                </Link>
                 <input
                   type="checkbox"
                   className="mr-2"
@@ -83,29 +36,10 @@ function App() {
                 {todo.description && (
                   <p className="text-gray-400 mt-1">{todo.description}</p>
                 )}
-                {todo.tasks && todo.tasks.length > 0 && (
-                  <ul className="mt-2 space-y-1">
-                    {todo.tasks.map((task) => (
-                      <>
-                        <input
-                          type="checkbox"
-                          className="mr-2"
-                          checked={task.completed}
-                        />
-                        <li
-                          key={task.id}
-                          className={`flex items-center ${
-                            task.completed ? "line-through text-gray-500" : ""
-                          }`}
-                        >
-                          {task.name}
-                        </li>
-                      </>
-                    ))}
-                  </ul>
-                )}
+                <Link to="/todos/$todoId" params={{ todoId: `${todo.id}` }}>
+                  {todo.id}
+                </Link>
               </li>
-              <CreateTaskForm id={todo.id} />
             </>
           ))
         ) : (

@@ -29,12 +29,31 @@ export const todosApp = new Hono<{
 
     const todos = await db.query.todos.findMany({
       where: eq(todosSchema.userId, user.id),
+    });
+
+    return c.json(todos);
+  })
+  .get("/:id", async (c) => {
+    const user = c.get("user");
+
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { id } = c.req.param();
+
+    // First, optionally verify that todo belongs to this user
+    const todo = await db.query.todos.findFirst({
+      where: and(
+        eq(todosSchema.id, Number(id)),
+        eq(todosSchema.userId, user.id)
+      ),
       with: {
         tasks: true,
       },
     });
 
-    return c.json(todos);
+    if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
+
+    return c.json(todo);
   })
   .post("/", zValidator("json", todoSchema), async (c) => {
     const user = c.get("user");

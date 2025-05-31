@@ -16,8 +16,20 @@ const $tasksPost = client.api.todos[":id"].tasks.$post;
 type CreateTaskTypes = InferRequestType<typeof $tasksPost>["json"] &
   InferRequestType<typeof $tasksPost>["param"];
 
-export async function fetchTodoList() {
+export async function fetchTodos() {
   const res = await client.api.todos.$get();
+
+  if (!res.ok) throw new Error("Failed to fetch todos");
+
+  return res.json();
+}
+
+export async function fetchTodo(todoId: string) {
+  const res = await client.api.todos[":id"].$get({
+    param: {
+      id: todoId,
+    },
+  });
 
   if (!res.ok) throw new Error("Failed to fetch todos");
 
