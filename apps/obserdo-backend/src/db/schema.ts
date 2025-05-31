@@ -1,3 +1,4 @@
+import { relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -11,9 +12,33 @@ export const todos = pgTable("todos", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }),
+  completed: boolean("completed")
+    .$defaultFn(() => false)
+    .notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+  updatedAt: timestamp("updated_at")
+    .$defaultFn(() => /* @__PURE__ */ new Date())
+    .notNull(),
+});
+
+export const todoRelations = relations(todos, ({ many }) => ({
+  tasks: many(tasks),
+}));
+
+export const tasks = pgTable("tasks", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  name: varchar({ length: 255 }).notNull(),
+  todoListId: integer("todo_list_id")
+    .notNull()
+    .references(() => todos.id, { onDelete: "cascade" }),
+  completed: boolean("completed")
+    .$defaultFn(() => false)
+    .notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),

@@ -3,17 +3,39 @@ import { useState } from "react";
 import { useCreateTodo, useTodos } from "@/hooks/useTodos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useForm } from "@tanstack/react-form";
+import { z } from "zod/v4";
+import { Label } from "@/components/ui/label";
 
 export const Route = createFileRoute("/")({
   component: App,
+});
+
+const todosSchema = z.object({
+  title: z.string().min(1, "Title is required"),
+  description: z.string(),
 });
 
 function App() {
   const { data, isLoading, isError, error } = useTodos();
   const createTodoMutation = useCreateTodo();
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const form = useForm({
+    defaultValues: {
+      title: "",
+      description: "",
+    },
+    validators: {
+      onChange: todosSchema,
+    },
+    onSubmit: ({ value }) => {
+      createTodoMutation.mutate({
+        name: value.title,
+        description: value.description,
+      });
+      form.reset();
+    },
+  });
 
   if (isLoading)
     return <p className="text-center py-10 text-gray-400">Loading...</p>;
@@ -23,15 +45,6 @@ function App() {
         Error: {(error as Error).message}
       </p>
     );
-
-  const handleCreate = () => {
-    createTodoMutation.mutate({
-      name: title,
-      description: description,
-    });
-    setTitle("");
-    setDescription("");
-  };
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-900 rounded-lg shadow-md text-gray-100 min-h-screen">
@@ -70,28 +83,70 @@ function App() {
       </ul>
 
       <div className="space-y-4">
-        <Input
-          type="text"
-          placeholder="New todo"
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="bg-gray-800 text-gray-100"
-          autoFocus
-        />
-        <Input
-          type="text"
-          placeholder="Description (optional)"
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          className="bg-gray-800 text-gray-100"
-        />
-        <Button
-          onClick={handleCreate}
-          disabled={createTodoMutation.isPending || title.trim() === ""}
-          className="w-full"
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            form.handleSubmit();
+          }}
         >
-          Add Todo
-        </Button>
+          <form.Field
+            name="title"
+            children={(field) => {
+              return (
+                <>
+                  <Label className="flex-col items-start mt-3" htmlFor="title">
+                    New todo
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="bg-gray-800 text-gray-100"
+                      autoFocus
+                    />
+                  </Label>
+                </>
+              );
+            }}
+          />
+          <form.Field
+            name="description"
+            children={(field) => {
+              return (
+                <>
+                  <Label
+                    className="flex-col items-start mt-3"
+                    htmlFor="description"
+                  >
+                    Description (optional)
+                    <Input
+                      id={field.name}
+                      name={field.name}
+                      value={field.state.value}
+                      onBlur={field.handleBlur}
+                      onChange={(e) => field.handleChange(e.target.value)}
+                      className="bg-gray-800 text-gray-100"
+                    />
+                  </Label>
+                </>
+              );
+            }}
+          />
+          <form.Subscribe
+            selector={(state) => [state.canSubmit, state.isSubmitting]}
+            children={([canSubmit, isSubmitting]) => (
+              <Button
+                type="submit"
+                disabled={!canSubmit}
+                className="w-full mt-4"
+              >
+                {isSubmitting ? "..." : "Add Todo"}
+              </Button>
+            )}
+          />
+        </form>
       </div>
     </div>
   );
