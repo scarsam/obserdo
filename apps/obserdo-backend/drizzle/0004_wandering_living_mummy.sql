@@ -7,5 +7,5 @@ CREATE TABLE "tasks" (
 	"updated_at" timestamp NOT NULL
 );
 --> statement-breakpoint
-ALTER TABLE "todos" ADD COLUMN "completed" boolean NOT NULL;--> statement-breakpoint
+ALTER TABLE "todos" ADD COLUMN "completed" boolean NOT NULL DEFAULT false;--> statement-breakpoint
 ALTER TABLE "tasks" ADD CONSTRAINT "tasks_todo_list_id_todos_id_fk" FOREIGN KEY ("todo_list_id") REFERENCES "public"."todos"("id") ON DELETE cascade ON UPDATE no action;

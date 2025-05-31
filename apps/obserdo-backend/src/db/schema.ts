@@ -12,9 +12,7 @@ export const todos = pgTable("todos", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }),
-  completed: boolean("completed")
-    .$defaultFn(() => false)
-    .notNull(),
+  completed: boolean("completed").default(false).notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
@@ -36,9 +34,7 @@ export const tasks = pgTable("tasks", {
   todoListId: integer("todo_list_id")
     .notNull()
     .references(() => todos.id, { onDelete: "cascade" }),
-  completed: boolean("completed")
-    .$defaultFn(() => false)
-    .notNull(),
+  completed: boolean("completed").default(false).notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
     .notNull(),
