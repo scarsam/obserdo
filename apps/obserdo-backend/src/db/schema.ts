@@ -43,6 +43,13 @@ export const tasks = pgTable("tasks", {
     .notNull(),
 });
 
+export const tasksRelations = relations(tasks, ({ one }) => ({
+  todo: one(todos, {
+    fields: [tasks.todoListId],
+    references: [todos.id],
+  }),
+}));
+
 export const user = pgTable("user", {
   id: text("id").primaryKey(),
   name: text("name").notNull(),
