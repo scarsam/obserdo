@@ -9,8 +9,12 @@ const client = hc<AppType>(baseUrl, {
   },
 });
 
-const $post = client.api.todos.$post;
-type CreateTodoTypes = InferRequestType<typeof $post>["json"];
+const $todosPost = client.api.todos.$post;
+type CreateTodoTypes = InferRequestType<typeof $todosPost>["json"];
+
+const $tasksPost = client.api.todos[":id"].tasks.$post;
+type CreateTaskTypes = InferRequestType<typeof $tasksPost>["json"] &
+  InferRequestType<typeof $tasksPost>["param"];
 
 export async function fetchTodoList() {
   const res = await client.api.todos.$get();
@@ -25,6 +29,21 @@ export async function createTodo(newTodo: CreateTodoTypes) {
     json: {
       name: newTodo.name,
       description: newTodo.description,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to create todo");
+
+  return res.json();
+}
+
+export async function createTask(newTask: CreateTaskTypes) {
+  const res = await client.api.todos[":id"].tasks.$post({
+    param: {
+      id: newTask.id,
+    },
+    json: {
+      name: newTask.name,
     },
   });
 

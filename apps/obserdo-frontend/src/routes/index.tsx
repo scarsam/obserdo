@@ -1,11 +1,12 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-import { useCreateTodo, useTodos } from "@/hooks/useTodos";
+import { useCreateTask, useCreateTodo, useTodos } from "@/hooks/useTodos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import { Label } from "@/components/ui/label";
+import { CreateTodoForm } from "@/components/createTodo";
+import { CreateTaskForm } from "@/components/createTask";
 
 export const Route = createFileRoute("/")({
   component: App,
@@ -19,6 +20,7 @@ const todosSchema = z.object({
 function App() {
   const { data, isLoading, isError, error } = useTodos();
   const createTodoMutation = useCreateTodo();
+  const createTaskMutation = useCreateTask();
 
   const form = useForm({
     defaultValues: {
@@ -67,87 +69,50 @@ function App() {
       <ul className="mb-6 space-y-3">
         {data && data.length > 0 ? (
           data.map((todo) => (
-            <li
-              key={todo.id}
-              className="p-4 bg-gray-800 rounded-md shadow-sm hover:bg-gray-700 transition"
-            >
-              <p className="font-semibold">{todo.name}</p>
-              {todo.description && (
-                <p className="text-gray-400 mt-1">{todo.description}</p>
-              )}
-            </li>
+            <>
+              <li
+                key={todo.id}
+                className="p-4 bg-gray-800 rounded-md shadow-sm hover:bg-gray-700 transition"
+              >
+                <input
+                  type="checkbox"
+                  className="mr-2"
+                  checked={todo.completed}
+                />
+                <p className="font-semibold">{todo.name}</p>
+                {todo.description && (
+                  <p className="text-gray-400 mt-1">{todo.description}</p>
+                )}
+                {todo.tasks && todo.tasks.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {todo.tasks.map((task) => (
+                      <>
+                        <input
+                          type="checkbox"
+                          className="mr-2"
+                          checked={task.completed}
+                        />
+                        <li
+                          key={task.id}
+                          className={`flex items-center ${
+                            task.completed ? "line-through text-gray-500" : ""
+                          }`}
+                        >
+                          {task.name}
+                        </li>
+                      </>
+                    ))}
+                  </ul>
+                )}
+              </li>
+              <CreateTaskForm id={todo.id} />
+            </>
           ))
         ) : (
           <p className="text-gray-500 text-center">No todos yet.</p>
         )}
       </ul>
-
-      <div className="space-y-4">
-        <form
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-        >
-          <form.Field
-            name="title"
-            children={(field) => {
-              return (
-                <>
-                  <Label className="flex-col items-start mt-3" htmlFor="title">
-                    New todo
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="bg-gray-800 text-gray-100"
-                      autoFocus
-                    />
-                  </Label>
-                </>
-              );
-            }}
-          />
-          <form.Field
-            name="description"
-            children={(field) => {
-              return (
-                <>
-                  <Label
-                    className="flex-col items-start mt-3"
-                    htmlFor="description"
-                  >
-                    Description (optional)
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      className="bg-gray-800 text-gray-100"
-                    />
-                  </Label>
-                </>
-              );
-            }}
-          />
-          <form.Subscribe
-            selector={(state) => [state.canSubmit, state.isSubmitting]}
-            children={([canSubmit, isSubmitting]) => (
-              <Button
-                type="submit"
-                disabled={!canSubmit}
-                className="w-full mt-4"
-              >
-                {isSubmitting ? "..." : "Add Todo"}
-              </Button>
-            )}
-          />
-        </form>
-      </div>
+      <CreateTodoForm />
     </div>
   );
 }

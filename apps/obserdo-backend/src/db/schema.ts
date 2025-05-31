@@ -111,4 +111,13 @@ export const verification = pgTable("verification", {
   ),
 });
 
-export const schema = { todos, user, session, account, verification };
+export const schema = {
+  todos,
+  tasks,
+  user,
+  session,
+  account,
+  verification,
+  tasksRelations,
+  todoRelations,
+};
