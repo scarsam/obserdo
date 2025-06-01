@@ -1,14 +1,22 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { fetchTodo } from "@/api/todos";
+import { todoQueryOptions } from "@/api/todos";
 import { CreateTaskForm } from "@/components/createTask";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { anonymousAuthQueryOptions } from "@/lib/auth";
 
-export const Route = createFileRoute("/todos/$todoId")({
-  loader: ({ params: { todoId } }) => fetchTodo(todoId),
+export const Route = createFileRoute("/$todoId")({
+  loader: async ({ context, params: { todoId } }) => {
+    await context.queryClient.ensureQueryData(anonymousAuthQueryOptions());
+    context.queryClient.ensureQueryData(todoQueryOptions(todoId));
+  },
+  pendingComponent: () => <p>Loading...</p>,
+  errorComponent: () => <p>Error loading todo.</p>,
   component: App,
 });
 
 function App() {
-  const todo = Route.useLoaderData();
+  const { todoId } = Route.useParams();
+  const { data: todo } = useSuspenseQuery(todoQueryOptions(todoId));
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-900 rounded-lg shadow-md text-gray-100 min-h-screen">

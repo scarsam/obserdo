@@ -1,5 +1,5 @@
 import { baseUrl } from "@/lib/env";
-
+import { queryOptions } from "@tanstack/react-query";
 import type { AppType } from "obserdo-backend/types";
 import { hc, type InferRequestType } from "hono/client";
 
@@ -16,25 +16,35 @@ const $tasksPost = client.api.todos[":id"].tasks.$post;
 type CreateTaskTypes = InferRequestType<typeof $tasksPost>["json"] &
   InferRequestType<typeof $tasksPost>["param"];
 
-export async function fetchTodos() {
-  const res = await client.api.todos.$get();
+export const todosQueryOptions = () =>
+  queryOptions({
+    queryKey: ["todos"],
+    queryFn: async () => {
+      const res = await client.api.todos.$get();
 
-  if (!res.ok) throw new Error("Failed to fetch todos");
+      if (!res.ok) throw new Error("Failed to fetch todos");
 
-  return res.json();
-}
-
-export async function fetchTodo(todoId: string) {
-  const res = await client.api.todos[":id"].$get({
-    param: {
-      id: todoId,
+      return res.json();
     },
+    staleTime: 1000 * 60 * 5,
   });
 
-  if (!res.ok) throw new Error("Failed to fetch todos");
+export const todoQueryOptions = (id: string) =>
+  queryOptions({
+    queryKey: ["todo", id],
+    queryFn: async () => {
+      const res = await client.api.todos[":id"].$get({
+        param: {
+          id,
+        },
+      });
 
-  return res.json();
-}
+      if (!res.ok) throw new Error("Failed to fetch todos");
+
+      return res.json();
+    },
+    staleTime: 1000 * 60 * 5,
+  });
 
 export async function createTodo(newTodo: CreateTodoTypes) {
   const res = await client.api.todos.$post({

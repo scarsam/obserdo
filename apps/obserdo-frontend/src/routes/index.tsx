@@ -1,14 +1,21 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { CreateTodoForm } from "@/components/createTodo";
-import { fetchTodos } from "@/api/todos";
+import { todosQueryOptions } from "@/api/todos";
+import { useSuspenseQuery } from "@tanstack/react-query";
+import { anonymousAuthQueryOptions } from "@/lib/auth";
 
 export const Route = createFileRoute("/")({
-  loader: () => fetchTodos(),
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(anonymousAuthQueryOptions());
+    return context.queryClient.ensureQueryData(todosQueryOptions());
+  },
+  pendingComponent: () => <p>Loading...</p>,
+  errorComponent: () => <p>Error loading todos.</p>,
   component: App,
 });
 
 function App() {
-  const todos = Route.useLoaderData();
+  const { data: todos } = useSuspenseQuery(todosQueryOptions());
 
   return (
     <div className="max-w-lg mx-auto p-6 bg-gray-900 rounded-lg shadow-md text-gray-100 min-h-screen">
@@ -24,7 +31,7 @@ function App() {
                 key={todo.id}
                 className="p-4 bg-gray-800 rounded-md shadow-sm hover:bg-gray-700 transition"
               >
-                <Link to="/todos/$todoId" params={{ todoId: `${todo.id}` }}>
+                <Link to="/$todoId" params={{ todoId: `${todo.id}` }}>
                   {todo.id}
                 </Link>
                 <input
@@ -36,9 +43,6 @@ function App() {
                 {todo.description && (
                   <p className="text-gray-400 mt-1">{todo.description}</p>
                 )}
-                <Link to="/todos/$todoId" params={{ todoId: `${todo.id}` }}>
-                  {todo.id}
-                </Link>
               </li>
             </>
           ))

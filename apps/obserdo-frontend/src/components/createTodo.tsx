@@ -1,9 +1,11 @@
-import { useCreateTodo } from "@/hooks/useTodos";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { useMutation } from "@tanstack/react-query";
+import { createTodo } from "@/api/todos";
+import { queryClient } from "@/lib/react-query";
 
 const todosSchema = z.object({
   title: z.string().min(1, "Title is required"),
@@ -11,7 +13,10 @@ const todosSchema = z.object({
 });
 
 export const CreateTodoForm = () => {
-  const createTodoMutation = useCreateTodo();
+  const mutation = useMutation({
+    mutationFn: createTodo,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
+  });
 
   const form = useForm({
     defaultValues: {
@@ -22,10 +27,7 @@ export const CreateTodoForm = () => {
       onChange: todosSchema,
     },
     onSubmit: ({ value }) => {
-      createTodoMutation.mutate({
-        name: value.title,
-        description: value.description,
-      });
+      mutation.mutate({ name: value.title, description: value.description });
       form.reset();
     },
   });

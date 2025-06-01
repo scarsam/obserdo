@@ -1,16 +1,22 @@
-import { useCreateTask } from "@/hooks/useTodos";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
 import { Label } from "./ui/label";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
+import { queryClient } from "@/lib/react-query";
+import { useMutation } from "@tanstack/react-query";
+import { createTask } from "@/api/todos";
 
 const taskSchema = z.object({
   name: z.string().min(1, "Title is required"),
 });
 
 export const CreateTaskForm = ({ id }: { id: number }) => {
-  const createTaskMutation = useCreateTask();
+  const mutation = useMutation({
+    mutationFn: createTask,
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: ["todo", `${id}`] }),
+  });
 
   const form = useForm({
     defaultValues: {
@@ -20,10 +26,7 @@ export const CreateTaskForm = ({ id }: { id: number }) => {
       onChange: taskSchema,
     },
     onSubmit: ({ value }) => {
-      createTaskMutation.mutate({
-        id: `${id}`,
-        name: value.name,
-      });
+      mutation.mutate({ id: `${id}`, name: value.name });
       form.reset();
     },
   });
