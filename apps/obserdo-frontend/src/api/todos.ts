@@ -1,7 +1,7 @@
 import { baseUrl } from "@/lib/env";
 import { queryOptions } from "@tanstack/react-query";
 import type { AppType } from "obserdo-backend/types";
-import { hc, type InferRequestType } from "hono/client";
+import { hc, type InferRequestType, type InferResponseType } from "hono/client";
 
 const client = hc<AppType>(baseUrl, {
   init: {
@@ -10,11 +10,21 @@ const client = hc<AppType>(baseUrl, {
 });
 
 const $todosPost = client.api.todos.$post;
-type CreateTodoTypes = InferRequestType<typeof $todosPost>["json"];
+type CreateTodo = InferRequestType<typeof $todosPost>["json"];
+
+const $todosPut = client.api.todos[":id"].$put;
+type EditTodo = InferRequestType<typeof $todosPut>["json"] &
+  InferRequestType<typeof $todosPut>["param"];
 
 const $tasksPost = client.api.todos[":id"].tasks.$post;
-type CreateTaskTypes = InferRequestType<typeof $tasksPost>["json"] &
+type CreateTask = InferRequestType<typeof $tasksPost>["json"] &
   InferRequestType<typeof $tasksPost>["param"];
+
+const $todoGet = client.api.todos[":id"].$get;
+type TodoWithError = Exclude<InferResponseType<typeof $todoGet>, "error">;
+type RemoveError<T> = T extends { error: string } ? never : T;
+type TodoWithoutError = RemoveError<TodoWithError>;
+export type Todo = Omit<TodoWithoutError, "tasks">;
 
 export const todosQueryOptions = () =>
   queryOptions({
@@ -46,7 +56,7 @@ export const todoQueryOptions = (id: string) =>
     staleTime: 1000 * 60 * 5,
   });
 
-export async function createTodo(newTodo: CreateTodoTypes) {
+export async function createTodo(newTodo: CreateTodo) {
   const res = await client.api.todos.$post({
     json: {
       name: newTodo.name,
@@ -59,7 +69,24 @@ export async function createTodo(newTodo: CreateTodoTypes) {
   return res.json();
 }
 
-export async function createTask(newTask: CreateTaskTypes) {
+export async function editTodo(newTask: EditTodo) {
+  const res = await client.api.todos[":id"].$put({
+    param: {
+      id: newTask.id,
+    },
+    json: {
+      name: newTask.name,
+      description: newTask.description,
+      completed: newTask.completed,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to create todo");
+
+  return res.json();
+}
+
+export async function createTask(newTask: CreateTask) {
   const res = await client.api.todos[":id"].tasks.$post({
     param: {
       id: newTask.id,

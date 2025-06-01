@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { todoQueryOptions } from "@/api/todos";
-import { CreateTaskForm } from "@/components/createTask";
+import { CreateTaskForm } from "@/components/create-task-form";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { anonymousAuthQueryOptions } from "@/lib/auth";
 

@@ -7,8 +7,8 @@ import { useMutation } from "@tanstack/react-query";
 import { createTodo } from "@/api/todos";
 import { queryClient } from "@/lib/react-query";
 
-const todosSchema = z.object({
-  title: z.string().min(1, "Title is required"),
+const todoSchema = z.object({
+  name: z.string().min(1, "Name is required"),
   description: z.string(),
 });
 
@@ -20,14 +20,14 @@ export const CreateTodoForm = () => {
 
   const form = useForm({
     defaultValues: {
-      title: "",
+      name: "",
       description: "",
     },
     validators: {
-      onChange: todosSchema,
+      onChange: todoSchema,
     },
     onSubmit: ({ value }) => {
-      mutation.mutate({ name: value.title, description: value.description });
+      mutation.mutate({ name: value.name, description: value.description });
       form.reset();
     },
   });
@@ -42,11 +42,11 @@ export const CreateTodoForm = () => {
         }}
       >
         <form.Field
-          name="title"
+          name="name"
           children={(field) => {
             return (
               <>
-                <Label className="flex-col items-start mt-3" htmlFor="title">
+                <Label className="flex-col items-start mt-3" htmlFor="name">
                   New todo
                   <Input
                     id={field.name}

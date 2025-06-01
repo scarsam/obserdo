@@ -5,11 +5,12 @@ import { db } from "../db/index.js";
 import { auth } from "../lib/auth.js";
 
 import { todos as todosSchema, tasks as tasksSchema } from "../db/schema.js";
-import { and, eq } from "drizzle-orm";
+import { and, asc, eq } from "drizzle-orm";
 
 const todoSchema = z.object({
   name: z.string(),
   description: z.string(),
+  completed: z.boolean().optional(),
 });
 
 const taskSchema = z.object({
@@ -29,6 +30,7 @@ export const todosApp = new Hono<{
 
     const todos = await db.query.todos.findMany({
       where: eq(todosSchema.userId, user.id),
+      orderBy: [asc(todosSchema.createdAt)],
     });
 
     return c.json(todos);
@@ -54,6 +56,31 @@ export const todosApp = new Hono<{
     if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
 
     return c.json(todo);
+  })
+  .put("/:id", zValidator("json", todoSchema), async (c) => {
+    const user = c.get("user");
+
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { id } = c.req.param();
+
+    const { name, description, completed } = c.req.valid("json");
+
+    const todo = await db.query.todos.findFirst({
+      where: and(
+        eq(todosSchema.id, Number(id)),
+        eq(todosSchema.userId, user.id)
+      ),
+    });
+    if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
+    // Update the todo
+    const updatedTodo = await db
+      .update(todosSchema)
+      .set({ name, description, completed, updatedAt: new Date() })
+      .where(eq(todosSchema.id, todo.id))
+      .returning();
+
+    return c.json(updatedTodo[0]);
   })
   .post("/", zValidator("json", todoSchema), async (c) => {
     const user = c.get("user");
