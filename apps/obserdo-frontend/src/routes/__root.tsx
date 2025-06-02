@@ -10,7 +10,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       context.queryClient.ensureQueryData(anonymousAuthQueryOptions()),
     component: () => {
       return (
-        <div className="min-h-screen bg-black text-white">
+        <div className="min-h-screen max-w-5xl m-auto">
           <div className="flex items-center justify-between space-y-2">
             <div>
               <h2 className="text-2xl font-bold tracking-tight">

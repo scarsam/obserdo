@@ -1,8 +1,8 @@
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { useMutation } from "@tanstack/react-query";
 import { createTodo } from "@/api/todos";
 import { queryClient } from "@/lib/react-query";
@@ -12,7 +12,13 @@ const todoSchema = z.object({
   description: z.string(),
 });
 
-export const CreateTodoForm = () => {
+export const CreateTodoForm = ({
+  onSuccess,
+  onCancel,
+}: {
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) => {
   const mutation = useMutation({
     mutationFn: createTodo,
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
@@ -24,11 +30,13 @@ export const CreateTodoForm = () => {
       description: "",
     },
     validators: {
+      onMount: todoSchema,
       onChange: todoSchema,
     },
     onSubmit: ({ value }) => {
       mutation.mutate({ name: value.name, description: value.description });
       form.reset();
+      onSuccess?.();
     },
   });
 
@@ -54,7 +62,6 @@ export const CreateTodoForm = () => {
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    className="bg-gray-800 text-gray-100"
                     autoFocus
                   />
                 </Label>
@@ -78,7 +85,6 @@ export const CreateTodoForm = () => {
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    className="bg-gray-800 text-gray-100"
                   />
                 </Label>
               </>
@@ -93,6 +99,17 @@ export const CreateTodoForm = () => {
             </Button>
           )}
         />
+
+        {onCancel && (
+          <Button
+            variant="ghost"
+            className="w-full mt-2"
+            type="button"
+            onClick={() => onCancel()}
+          >
+            Cancel
+          </Button>
+        )}
       </form>
     </div>
   );

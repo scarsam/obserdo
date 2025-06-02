@@ -22,8 +22,8 @@ import {
   TableRow,
 } from "../ui/table";
 
-// import { DataTableToolbar } from "./data-table-toolbar";
 import { useState } from "react";
+import { CreateTodoDialog } from "../todo/create-todo-dialog";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -64,7 +64,7 @@ export function DataTable<TData, TValue>({
   return (
     <div className="space-y-4">
       {/* <DataTableToolbar table={table} /> */}
-      <div className="rounded-md border">
+      <div className="rounded-md">
         <Table>
           <TableHeader>
             {table.getHeaderGroups().map((headerGroup) => (
@@ -111,6 +111,11 @@ export function DataTable<TData, TValue>({
                 </TableCell>
               </TableRow>
             )}
+            <TableRow className="hover:bg-transparent">
+              <TableCell colSpan={columns.length} className="h-16 text-center">
+                <CreateTodoDialog />
+              </TableCell>
+            </TableRow>
           </TableBody>
         </Table>
       </div>

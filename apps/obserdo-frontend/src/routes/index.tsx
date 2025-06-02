@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CreateTodoForm } from "@/components/create-todo-form";
+import { CreateTodoForm } from "@/components/todo/create-todo-form";
 import { todosQueryOptions } from "@/api/todos";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { anonymousAuthQueryOptions } from "@/lib/auth";
@@ -24,8 +24,6 @@ function App() {
       <h1 className="text-3xl font-bold mb-6 text-center text-white">
         My Todos
       </h1>
-      <CreateTodoForm />
-
       {todos && todos.length > 0 ? (
         <DataTable data={todos} columns={columns} />
       ) : (

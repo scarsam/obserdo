@@ -1,11 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
 
-import { Checkbox } from "../ui/checkbox";
-
 import { DataTableColumnHeader } from "./data-table-column-header";
 import { DataTableRowActions } from "./data-table-row-actions";
 import type { Todo } from "@/api/todos";
 import { CheckCircle, Circle, CircleOff, Timer } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 
 export const statuses = [
   {
@@ -32,51 +31,38 @@ export const statuses = [
 
 export const columns: ColumnDef<Todo>[] = [
   {
-    id: "select",
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-        className="translate-y-[2px]"
-      />
+    accessorKey: "id",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="ID" />
     ),
+    cell: ({ row }) => {
+      const id = row.original.id;
+      return (
+        <Link
+          to="/$todoId"
+          params={{ todoId: `${id}` }}
+          className="hover:underline text-blue-600 font-medium"
+        >
+          <>TODO-{row.getValue("id")}</>
+        </Link>
+      );
+    },
     enableSorting: false,
     enableHiding: false,
   },
   {
-    accessorKey: "status",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Status" />
-    ),
-    cell: ({ row }) => {
-      const status = statuses.find(
-        (status) => status.value === row.getValue("status")
-      );
-
-      if (!status) {
-        return null;
-      }
-
-      return (
-        <div className="flex w-[100px] items-center">
-          {status.icon && (
-            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
-          )}
-          <span>{status.label}</span>
-        </div>
-      );
-    },
-    filterFn: (row, id, value) => {
-      return value.includes(row.getValue(id));
-    },
-  },
-  {
+    accessorFn: (row) => row.name,
     accessorKey: "name",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Name" />
     ),
-    cell: ({ row }) => <div className="w-[80px]">{row.getValue("name")}</div>,
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <span className="max-w-[500px] truncate font-medium">
+          {row.getValue("name")}
+        </span>
+      </div>
+    ),
     enableSorting: false,
     enableHiding: false,
   },
@@ -95,9 +81,68 @@ export const columns: ColumnDef<Todo>[] = [
       );
     },
   },
+  {
+    accessorKey: "status",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Status" />
+    ),
+    cell: ({ row }) => {
+      const status = statuses.find(
+        (status) => status.value === row.getValue("status")
+      );
 
+      if (!status) {
+        return "N/A";
+      }
+
+      return (
+        <div className="flex w-[100px] items-center">
+          {status.icon && (
+            <status.icon className="mr-2 h-4 w-4 text-muted-foreground" />
+          )}
+          <span>{status.label}</span>
+        </div>
+      );
+    },
+    filterFn: (row, id, value) => {
+      return value.includes(row.getValue(id));
+    },
+  },
+  {
+    accessorKey: "createdAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Created At" />
+    ),
+    cell: ({ row }) => (
+      <div className="flex space-x-2">
+        <span className="max-w-[500px] truncate font-medium">
+          {row.getValue("createdAt")}
+        </span>
+      </div>
+    ),
+    enableSorting: true,
+    enableHiding: false,
+  },
+  {
+    accessorKey: "updatedAt",
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Updated At" />
+    ),
+    cell: ({ row }) => {
+      return (
+        <div className="flex space-x-2">
+          <span className="max-w-[500px] truncate font-medium">
+            {row.getValue("updatedAt")}
+          </span>
+        </div>
+      );
+    },
+  },
   {
     id: "actions",
-    cell: () => <DataTableRowActions />,
+    header: ({ column }) => (
+      <DataTableColumnHeader column={column} title="Actions" />
+    ),
+    cell: ({ row }) => <DataTableRowActions todo={row.original} />,
   },
 ];
