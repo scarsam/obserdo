@@ -6,13 +6,21 @@ import {
   boolean,
   integer,
   varchar,
+  pgEnum,
 } from "drizzle-orm/pg-core";
+
+export const todoStatus = pgEnum("todo_status", [
+  "todo",
+  "in-progress",
+  "done",
+  "archived",
+]);
 
 export const todos = pgTable("todos", {
   id: integer().primaryKey().generatedAlwaysAsIdentity(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }),
-  completed: boolean("completed").default(false).notNull(),
+  status: todoStatus().default("todo").notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),
