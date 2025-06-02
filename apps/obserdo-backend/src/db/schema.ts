@@ -121,7 +121,9 @@ export const verification = pgTable("verification", {
 });
 
 export const todosZodSchema = createInsertSchema(todos).omit({ userId: true });
-export const tasksZodSchema = createInsertSchema(tasks);
+export const tasksZodSchema = createInsertSchema(tasks).omit({
+  todoListId: true,
+});
 
 export const schema = {
   todos,

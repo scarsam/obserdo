@@ -1,7 +1,7 @@
 import { type ColumnDef } from "@tanstack/react-table";
 
-import { DataTableColumnHeader } from "./data-table-column-header";
-import { DataTableRowActions } from "./data-table-row-actions";
+import { DataTableColumnHeader } from "../table/data-table-column-header";
+import { DataTableRowActions } from "../table/data-table-row-actions";
 import type { Todo } from "@/api/todos";
 import { CheckCircle, Circle, CircleOff, Timer } from "lucide-react";
 import { Link } from "@tanstack/react-router";
@@ -29,7 +29,7 @@ export const statuses = [
   },
 ];
 
-export const columns: ColumnDef<Todo>[] = [
+export const todoColumns: ColumnDef<Todo>[] = [
   {
     accessorKey: "id",
     header: ({ column }) => (

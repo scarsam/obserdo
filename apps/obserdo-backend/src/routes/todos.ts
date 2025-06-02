@@ -43,7 +43,9 @@ export const todosApp = new Hono<{
         eq(todosSchema.userId, user.id)
       ),
       with: {
-        tasks: true,
+        tasks: {
+          orderBy: [asc(tasksSchema.createdAt)],
+        },
       },
     });
 
@@ -100,6 +102,8 @@ export const todosApp = new Hono<{
     const { name } = c.req.valid("json");
 
     // First, optionally verify that todo belongs to this user
+    // Todo: Do I need to fetch first?
+    // Todo: Can we get rid of string to num conversion?
     const todo = await db.query.todos.findFirst({
       where: and(
         eq(todosSchema.id, Number(id)),
@@ -122,4 +126,37 @@ export const todosApp = new Hono<{
       .returning();
 
     return c.json(createdTask[0]);
+  })
+  .put("/:id/tasks/:taskId", zValidator("json", tasksZodSchema), async (c) => {
+    const user = c.get("user");
+
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { id, taskId } = c.req.param();
+
+    const { name, completed } = c.req.valid("json");
+
+    // First, optionally verify that todo belongs to this user
+    const todo = await db.query.todos.findFirst({
+      where: and(
+        eq(todosSchema.id, Number(id)),
+        eq(todosSchema.userId, user.id)
+      ),
+    });
+
+    if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
+
+    // Update the task
+    const updatedTask = await db
+      .update(tasksSchema)
+      .set({ name, completed, updatedAt: new Date() })
+      .where(
+        and(
+          eq(tasksSchema.id, Number(taskId)),
+          eq(tasksSchema.todoListId, todo.id)
+        )
+      )
+      .returning();
+
+    return c.json(updatedTask[0]);
   });

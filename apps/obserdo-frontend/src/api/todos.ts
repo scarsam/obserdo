@@ -20,11 +20,16 @@ const $tasksPost = client.api.todos[":id"].tasks.$post;
 type CreateTask = InferRequestType<typeof $tasksPost>["json"] &
   InferRequestType<typeof $tasksPost>["param"];
 
+const $taskPut = client.api.todos[":id"].tasks[":taskId"].$put;
+type EditTask = InferRequestType<typeof $taskPut>["json"] &
+  InferRequestType<typeof $taskPut>["param"];
+
 const $todoGet = client.api.todos[":id"].$get;
 type TodoWithError = Exclude<InferResponseType<typeof $todoGet>, "error">;
 type RemoveError<T> = T extends { error: string } ? never : T;
 type TodoWithoutError = RemoveError<TodoWithError>;
 export type Todo = Omit<TodoWithoutError, "tasks">;
+export type Task = Pick<TodoWithoutError, "tasks">["tasks"][number];
 
 export const todosQueryOptions = () =>
   queryOptions({
@@ -93,6 +98,23 @@ export async function createTask(newTask: CreateTask) {
     },
     json: {
       name: newTask.name,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to create todo");
+
+  return res.json();
+}
+
+export async function editTask(editTask: EditTask) {
+  const res = await client.api.todos[":id"].tasks[":taskId"].$put({
+    param: {
+      id: editTask.id,
+      taskId: editTask.taskId,
+    },
+    json: {
+      name: editTask.name,
+      completed: editTask.completed,
     },
   });
 

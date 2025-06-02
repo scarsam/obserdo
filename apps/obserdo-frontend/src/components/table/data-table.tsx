@@ -22,8 +22,7 @@ import {
   TableRow,
 } from "../ui/table";
 
-import { useState } from "react";
-import { CreateTodoDialog } from "../todo/create-todo-dialog";
+import { useState, type PropsWithChildren } from "react";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -31,9 +30,10 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
+  children,
   columns,
   data,
-}: DataTableProps<TData, TValue>) {
+}: PropsWithChildren<DataTableProps<TData, TValue>>) {
   const [rowSelection, setRowSelection] = useState({});
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
@@ -113,7 +113,7 @@ export function DataTable<TData, TValue>({
             )}
             <TableRow className="hover:bg-transparent">
               <TableCell colSpan={columns.length} className="h-16 text-center">
-                <CreateTodoDialog />
+                {children}
               </TableCell>
             </TableRow>
           </TableBody>

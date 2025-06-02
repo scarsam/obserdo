@@ -1,10 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { CreateTodoForm } from "@/components/todo/create-todo-form";
 import { todosQueryOptions } from "@/api/todos";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { anonymousAuthQueryOptions } from "@/lib/auth";
 import { DataTable } from "@/components/table/data-table";
-import { columns } from "@/components/table/columns";
+import { todoColumns } from "@/components/todo/todo-columns";
+import { CreateTodoDialog } from "@/components/todo/create-todo-dialog";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -25,7 +25,9 @@ function App() {
         My Todos
       </h1>
       {todos && todos.length > 0 ? (
-        <DataTable data={todos} columns={columns} />
+        <DataTable data={todos} columns={todoColumns}>
+          <CreateTodoDialog />
+        </DataTable>
       ) : (
         <p className="text-gray-500 text-center">No todos yet.</p>
       )}

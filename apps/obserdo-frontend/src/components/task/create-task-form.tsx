@@ -1,33 +1,45 @@
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { Label } from "./ui/label";
-import { Button } from "./ui/button";
-import { Input } from "./ui/input";
+import { Label } from "../ui/label";
+import { Button } from "../ui/button";
+import { Input } from "../ui/input";
 import { queryClient } from "@/lib/react-query";
 import { useMutation } from "@tanstack/react-query";
-import { createTask } from "@/api/todos";
+import { createTask, type Todo } from "@/api/todos";
+import { createTaskMutation } from "@/mutations/task";
 
 const taskSchema = z.object({
   name: z.string().min(1, "Title is required"),
 });
 
-export const CreateTaskForm = ({ id }: { id: number }) => {
-  const mutation = useMutation({
-    mutationFn: createTask,
-    onSuccess: () =>
-      queryClient.invalidateQueries({ queryKey: ["todo", `${id}`] }),
-  });
+export const CreateTaskForm = ({
+  todo,
+  onSuccess,
+  onCancel,
+}: {
+  todo: Todo;
+  onSuccess?: () => void;
+  onCancel?: () => void;
+}) => {
+  // const mutation = useMutation({
+  //   mutationFn: createTask,
+  //   onSuccess: () =>
+  //     queryClient.invalidateQueries({ queryKey: ["todo", `${todo.id}`] }),
+  // });
+  const mutation = createTaskMutation(todo.id);
 
   const form = useForm({
     defaultValues: {
       name: "",
     },
     validators: {
+      onMount: taskSchema,
       onChange: taskSchema,
     },
     onSubmit: ({ value }) => {
-      mutation.mutate({ id: `${id}`, name: value.name });
+      mutation.mutate({ id: `${todo.id}`, name: value.name });
       form.reset();
+      onSuccess?.();
     },
   });
 
@@ -53,7 +65,6 @@ export const CreateTaskForm = ({ id }: { id: number }) => {
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
-                    className="bg-gray-800 text-gray-100"
                     autoFocus
                   />
                 </Label>
@@ -69,6 +80,17 @@ export const CreateTaskForm = ({ id }: { id: number }) => {
             </Button>
           )}
         />
+
+        {onCancel && (
+          <Button
+            variant="ghost"
+            className="w-full mt-2"
+            type="button"
+            onClick={() => onCancel()}
+          >
+            Cancel
+          </Button>
+        )}
       </form>
     </div>
   );
