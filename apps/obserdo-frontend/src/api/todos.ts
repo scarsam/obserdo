@@ -77,7 +77,7 @@ export async function editTodo(newTask: EditTodo) {
     json: {
       name: newTask.name,
       description: newTask.description,
-      completed: newTask.completed,
+      status: newTask.status,
     },
   });
 

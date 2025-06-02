@@ -2,9 +2,8 @@ import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { useMutation } from "@tanstack/react-query";
-import { editTodo, type Todo } from "@/api/todos";
-import { queryClient } from "@/lib/react-query";
+import { type Todo } from "@/api/todos";
+import { editTodoMutation } from "@/mutations/todo";
 
 const todoSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -20,13 +19,7 @@ export function EditTodoForm({
   onSuccess?: () => void;
   onCancel?: () => void;
 }) {
-  const mutation = useMutation({
-    mutationFn: editTodo,
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["todos"] });
-      onSuccess?.();
-    },
-  });
+  const mutation = editTodoMutation();
 
   const form = useForm({
     defaultValues: {
@@ -42,6 +35,7 @@ export function EditTodoForm({
         id: `${todo.id}`,
         name: value.name,
         description: value.description,
+        status: todo.status,
       });
       form.reset();
       onSuccess?.();

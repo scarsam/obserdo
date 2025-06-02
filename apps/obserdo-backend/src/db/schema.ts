@@ -8,6 +8,7 @@ import {
   varchar,
   pgEnum,
 } from "drizzle-orm/pg-core";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 
 export const todoStatus = pgEnum("todo_status", [
   "todo",
@@ -118,6 +119,9 @@ export const verification = pgTable("verification", {
     () => /* @__PURE__ */ new Date()
   ),
 });
+
+export const todosZodSchema = createInsertSchema(todos).omit({ userId: true });
+export const tasksZodSchema = createInsertSchema(tasks);
 
 export const schema = {
   todos,

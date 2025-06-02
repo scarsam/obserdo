@@ -1,21 +1,15 @@
 import { Hono } from "hono";
 import { zValidator } from "@hono/zod-validator";
-import { z } from "zod/v4";
 import { db } from "../db/index.js";
 import { auth } from "../lib/auth.js";
 
-import { todos as todosSchema, tasks as tasksSchema } from "../db/schema.js";
+import {
+  todos as todosSchema,
+  tasks as tasksSchema,
+  todosZodSchema,
+  tasksZodSchema,
+} from "../db/schema.js";
 import { and, asc, eq } from "drizzle-orm";
-
-const todoSchema = z.object({
-  name: z.string(),
-  description: z.string(),
-  completed: z.boolean().optional(),
-});
-
-const taskSchema = z.object({
-  name: z.string(),
-});
 
 export const todosApp = new Hono<{
   Variables: {
@@ -57,14 +51,14 @@ export const todosApp = new Hono<{
 
     return c.json(todo);
   })
-  .put("/:id", zValidator("json", todoSchema), async (c) => {
+  .put("/:id", zValidator("json", todosZodSchema), async (c) => {
     const user = c.get("user");
 
     if (!user) return c.json({ error: "Unauthorized" }, 401);
 
     const { id } = c.req.param();
 
-    const { name, description, completed } = c.req.valid("json");
+    const { name, description, status } = c.req.valid("json");
 
     const todo = await db.query.todos.findFirst({
       where: and(
@@ -76,13 +70,13 @@ export const todosApp = new Hono<{
     // Update the todo
     const updatedTodo = await db
       .update(todosSchema)
-      .set({ name, description, completed, updatedAt: new Date() })
+      .set({ name, description, status, updatedAt: new Date() })
       .where(eq(todosSchema.id, todo.id))
       .returning();
 
     return c.json(updatedTodo[0]);
   })
-  .post("/", zValidator("json", todoSchema), async (c) => {
+  .post("/", zValidator("json", todosZodSchema), async (c) => {
     const user = c.get("user");
 
     if (!user) return c.json({ error: "Unauthorized" }, 401);
@@ -96,7 +90,7 @@ export const todosApp = new Hono<{
 
     return c.json(createdTodo);
   })
-  .post("/:id/tasks", zValidator("json", taskSchema), async (c) => {
+  .post("/:id/tasks", zValidator("json", tasksZodSchema), async (c) => {
     const user = c.get("user");
 
     if (!user) return c.json({ error: "Unauthorized" }, 401);
