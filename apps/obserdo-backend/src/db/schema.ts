@@ -8,6 +8,7 @@ import {
   varchar,
   pgEnum,
   type AnyPgColumn,
+  uuid,
 } from "drizzle-orm/pg-core";
 import {
   createInsertSchema,
@@ -24,7 +25,7 @@ export const todoStatus = pgEnum("todo_status", [
 ]);
 
 export const todos = pgTable("todos", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   description: varchar({ length: 255 }),
   status: todoStatus().default("todo").notNull(),
@@ -44,7 +45,7 @@ export const todoRelations = relations(todos, ({ many }) => ({
 }));
 
 export const tasks = pgTable("tasks", {
-  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  id: uuid("id").primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
   todoListId: integer("todo_list_id")
     .notNull()
