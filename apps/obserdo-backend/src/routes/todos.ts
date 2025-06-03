@@ -39,10 +39,7 @@ export const todosApp = new Hono<{
 
     // First, optionally verify that todo belongs to this user
     const todo = await db.query.todos.findFirst({
-      where: and(
-        eq(todosSchema.id, Number(id)),
-        eq(todosSchema.userId, user.id)
-      ),
+      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
       with: {
         tasks: {
           orderBy: [asc(tasksSchema.createdAt)],
@@ -66,10 +63,7 @@ export const todosApp = new Hono<{
     const { name, description, status } = c.req.valid("json");
 
     const todo = await db.query.todos.findFirst({
-      where: and(
-        eq(todosSchema.id, Number(id)),
-        eq(todosSchema.userId, user.id)
-      ),
+      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
     });
     if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
     // Update the todo
@@ -106,12 +100,8 @@ export const todosApp = new Hono<{
 
     // First, optionally verify that todo belongs to this user
     // Todo: Do I need to fetch first?
-    // Todo: Can we get rid of string to num conversion?
     const todo = await db.query.todos.findFirst({
-      where: and(
-        eq(todosSchema.id, Number(id)),
-        eq(todosSchema.userId, user.id)
-      ),
+      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
     });
 
     if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
@@ -142,10 +132,7 @@ export const todosApp = new Hono<{
 
     // First, optionally verify that todo belongs to this user
     const todo = await db.query.todos.findFirst({
-      where: and(
-        eq(todosSchema.id, Number(id)),
-        eq(todosSchema.userId, user.id)
-      ),
+      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
     });
 
     if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
@@ -155,10 +142,7 @@ export const todosApp = new Hono<{
       .update(tasksSchema)
       .set({ name, completed, updatedAt: new Date() })
       .where(
-        and(
-          eq(tasksSchema.id, Number(taskId)),
-          eq(tasksSchema.todoListId, todo.id)
-        )
+        and(eq(tasksSchema.id, taskId), eq(tasksSchema.todoListId, todo.id))
       )
       .returning();
 
@@ -173,10 +157,7 @@ export const todosApp = new Hono<{
 
     // First, optionally verify that todo belongs to this user
     const todo = await db.query.todos.findFirst({
-      where: and(
-        eq(todosSchema.id, Number(id)),
-        eq(todosSchema.userId, user.id)
-      ),
+      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
     });
 
     if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
@@ -185,10 +166,7 @@ export const todosApp = new Hono<{
     await db
       .delete(tasksSchema)
       .where(
-        and(
-          eq(tasksSchema.id, Number(taskId)),
-          eq(tasksSchema.todoListId, todo.id)
-        )
+        and(eq(tasksSchema.id, taskId), eq(tasksSchema.todoListId, todo.id))
       );
 
     return c.json({ success: true });

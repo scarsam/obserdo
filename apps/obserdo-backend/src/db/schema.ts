@@ -4,17 +4,12 @@ import {
   text,
   timestamp,
   boolean,
-  integer,
   varchar,
   pgEnum,
   type AnyPgColumn,
   uuid,
 } from "drizzle-orm/pg-core";
-import {
-  createInsertSchema,
-  createSelectSchema,
-  type CreateSelectSchema,
-} from "drizzle-zod";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import type z from "zod/v4";
 
 export const todoStatus = pgEnum("todo_status", [
@@ -47,15 +42,12 @@ export const todoRelations = relations(todos, ({ many }) => ({
 export const tasks = pgTable("tasks", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
-  todoListId: integer("todo_list_id")
+  todoListId: uuid("todo_list_id")
     .notNull()
     .references(() => todos.id, { onDelete: "cascade" }),
-  parentTaskId: integer("parent_task_id").references(
-    (): AnyPgColumn => tasks.id,
-    {
-      onDelete: "cascade",
-    }
-  ),
+  parentTaskId: uuid("parent_task_id").references((): AnyPgColumn => tasks.id, {
+    onDelete: "cascade",
+  }),
   completed: boolean("completed").default(false).notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
