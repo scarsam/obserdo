@@ -24,13 +24,9 @@ function App() {
       <h1 className="text-3xl font-bold mb-6 text-center text-white">
         My Todos
       </h1>
-      {todos && todos.length > 0 ? (
-        <DataTable data={todos} columns={todoColumns}>
-          <CreateTodoDialog />
-        </DataTable>
-      ) : (
-        <p className="text-gray-500 text-center">No todos yet.</p>
-      )}
+      <DataTable data={todos} columns={todoColumns}>
+        <CreateTodoDialog />
+      </DataTable>
     </>
   );
 }

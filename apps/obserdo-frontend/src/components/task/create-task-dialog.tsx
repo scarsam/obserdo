@@ -19,9 +19,9 @@ export function CreateTaskDialog({
   todoListId,
   parentTaskId,
 }: {
-  table: Table<Task>;
-  todoListId: number;
-  parentTaskId?: number;
+  table?: Table<Task>;
+  todoListId: string;
+  parentTaskId?: string;
 }) {
   const [open, setOpen] = useState(false);
 

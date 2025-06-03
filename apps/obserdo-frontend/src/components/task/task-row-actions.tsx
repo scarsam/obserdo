@@ -12,8 +12,8 @@ export function TaskRowActions({
   parentTaskId,
 }: {
   table: Table<Task>;
-  todoListId: number;
-  parentTaskId?: number;
+  todoListId: string;
+  parentTaskId?: string;
 }) {
   const mutation = useDeleteTaskMutation(todoListId);
 

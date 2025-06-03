@@ -8,15 +8,15 @@ import {
 import { queryClient } from "@/lib/react-query";
 import { useMutation } from "@tanstack/react-query";
 
-export function useCreateTaskMutation(todoId: number) {
+export function useCreateTaskMutation(todoId: string) {
   return useMutation({
     mutationFn: createTask,
 
     // Optimistically update the cache
     onMutate: async (newTask) => {
-      await queryClient.cancelQueries({ queryKey: ["todo", `${todoId}`] });
+      await queryClient.cancelQueries({ queryKey: ["todo", todoId] });
 
-      const previousTodo = queryClient.getQueryData(["todo", `${todoId}`]);
+      const previousTodo = queryClient.getQueryData(["todo", todoId]);
 
       console.log("newTask", newTask);
 
@@ -29,7 +29,7 @@ export function useCreateTaskMutation(todoId: number) {
         parentTaskId: newTask.parentTaskId ?? null,
       };
 
-      queryClient.setQueryData(["todo", `${todoId}`], (old: any) => {
+      queryClient.setQueryData(["todo", todoId], (old: any) => {
         if (!old) return old;
 
         return {
@@ -44,63 +44,57 @@ export function useCreateTaskMutation(todoId: number) {
     // Rollback on error
     onError: (_err, _newTask, context) => {
       if (context?.previousTodo) {
-        queryClient.setQueryData(["todo", `${todoId}`], context.previousTodo);
+        queryClient.setQueryData(["todo", todoId], context.previousTodo);
       }
     },
 
     // Invalidate to sync with server
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["todo", `${todoId}`] });
+      queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
     },
   });
 }
 
-export const useEditTaskMutation = (todoListId?: number) =>
+export const useEditTaskMutation = (todoListId?: string) =>
   useMutation({
     mutationFn: editTask,
     onMutate: async (newTask) => {
-      await queryClient.cancelQueries({ queryKey: ["todo", `${todoListId}`] });
+      await queryClient.cancelQueries({ queryKey: ["todo", todoListId] });
 
-      const previousTodo = queryClient.getQueryData(["todo", `${todoListId}`]);
+      const previousTodo = queryClient.getQueryData(["todo", todoListId]);
 
-      queryClient.setQueryData(
-        ["todo", `${todoListId}`],
-        (old: TodoWithTasks) => {
-          if (!old) return old;
+      queryClient.setQueryData(["todo", todoListId], (old: TodoWithTasks) => {
+        if (!old) return old;
 
-          return {
-            ...old,
-            tasks: old.tasks.map((task) =>
-              task.id === Number(newTask.taskId)
-                ? { ...task, completed: newTask.completed }
-                : task
-            ),
-          };
-        }
-      );
+        return {
+          ...old,
+          tasks: old.tasks.map((task) =>
+            task.id === newTask.taskId
+              ? { ...task, completed: newTask.completed }
+              : task
+          ),
+        };
+      });
 
       return { previousTodo };
     },
 
     onError: (_err, _newTask, context) => {
       if (context?.previousTodo) {
-        queryClient.setQueryData(
-          ["todo", `${todoListId}`],
-          context.previousTodo
-        );
+        queryClient.setQueryData(["todo", todoListId], context.previousTodo);
       }
     },
 
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: ["todo", `${todoListId}`] });
+      queryClient.invalidateQueries({ queryKey: ["todo", todoListId] });
     },
   });
 
-export const useDeleteTaskMutation = (todoListId?: number) => {
+export const useDeleteTaskMutation = (todoListId?: string) => {
   return useMutation({
     mutationFn: deleteTask,
     onMutate: async (newTask) => {
-      // if (!todoListId) return;
+      if (!todoListId) return;
 
       await queryClient.cancelQueries({
         queryKey: ["todo", `${todoListId}`],
@@ -119,7 +113,7 @@ export const useDeleteTaskMutation = (todoListId?: number) => {
           // Optional: recursively remove sub-tasks
           const removeTaskAndSubtasks = (
             tasks: Task[],
-            idToRemove: number
+            idToRemove: string
           ): Task[] => {
             return tasks
               .filter((task) => task.id !== idToRemove)
@@ -130,7 +124,7 @@ export const useDeleteTaskMutation = (todoListId?: number) => {
 
           return {
             ...old,
-            tasks: removeTaskAndSubtasks(old.tasks, Number(newTask.taskId)),
+            tasks: removeTaskAndSubtasks(old.tasks, newTask.taskId),
           };
         }
       );

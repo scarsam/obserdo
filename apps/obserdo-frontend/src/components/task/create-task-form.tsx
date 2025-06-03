@@ -19,8 +19,8 @@ export const CreateTaskForm = ({
   onCancel,
 }: {
   table: Table<Task>;
-  parentTaskId?: number;
-  todoListId: number;
+  parentTaskId?: string;
+  todoListId: string;
   onSuccess?: () => void;
   onCancel?: () => void;
 }) => {

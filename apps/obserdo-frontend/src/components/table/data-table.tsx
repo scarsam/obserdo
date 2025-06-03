@@ -59,8 +59,6 @@ export function DataTable<TData extends ExpandableRow<TData>, TValue>({
     onExpandedChange: setExpanded,
     getExpandedRowModel: getExpandedRowModel(),
     getSubRows: (row) => row.children ?? [],
-    getRowId: (row) => String(row.id), // <-- important!
-
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,
