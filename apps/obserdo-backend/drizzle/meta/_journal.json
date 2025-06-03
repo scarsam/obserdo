@@ -5,64 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1748599764678,
-      "tag": "0000_lucky_luminals",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1748611459509,
-      "tag": "0001_eager_shooting_star",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1748614467446,
-      "tag": "0002_add-is-anonymous-to-user",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1748622455661,
-      "tag": "0003_puzzling_chameleon",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1748722966167,
-      "tag": "0004_wandering_living_mummy",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "7",
-      "when": 1748723423339,
-      "tag": "0005_broad_the_captain",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "7",
-      "when": 1748896166397,
-      "tag": "0006_careless_black_tom",
-      "breakpoints": true
-    },
-    {
-      "idx": 7,
-      "version": "7",
-      "when": 1748976435061,
-      "tag": "0007_legal_madame_hydra",
-      "breakpoints": true
-    },
-    {
-      "idx": 8,
-      "version": "7",
-      "when": 1748986405740,
-      "tag": "0008_tiresome_doorman",
+      "when": 1748989321026,
+      "tag": "0000_absent_black_tarantula",
       "breakpoints": true
     }
   ]
