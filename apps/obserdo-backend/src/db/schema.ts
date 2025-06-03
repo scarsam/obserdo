@@ -7,8 +7,9 @@ import {
   integer,
   varchar,
   pgEnum,
+  type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { createInsertSchema } from "drizzle-zod";
 
 export const todoStatus = pgEnum("todo_status", [
   "todo",
@@ -43,6 +44,12 @@ export const tasks = pgTable("tasks", {
   todoListId: integer("todo_list_id")
     .notNull()
     .references(() => todos.id, { onDelete: "cascade" }),
+  parentTaskId: integer("parent_task_id").references(
+    (): AnyPgColumn => tasks.id,
+    {
+      onDelete: "cascade",
+    }
+  ),
   completed: boolean("completed").default(false).notNull(),
   createdAt: timestamp("created_at")
     .$defaultFn(() => /* @__PURE__ */ new Date())
@@ -52,10 +59,20 @@ export const tasks = pgTable("tasks", {
     .notNull(),
 });
 
-export const tasksRelations = relations(tasks, ({ one }) => ({
+export const tasksRelations = relations(tasks, ({ one, many }) => ({
   todo: one(todos, {
     fields: [tasks.todoListId],
     references: [todos.id],
+  }),
+
+  parentTask: one(tasks, {
+    fields: [tasks.parentTaskId],
+    references: [tasks.id],
+    relationName: "parent",
+  }),
+
+  subTasks: many(tasks, {
+    relationName: "parent",
   }),
 }));
 

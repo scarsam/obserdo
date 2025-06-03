@@ -50,6 +50,13 @@
       "when": 1748896166397,
       "tag": "0006_careless_black_tom",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "7",
+      "when": 1748976435061,
+      "tag": "0007_legal_madame_hydra",
+      "breakpoints": true
     }
   ]
 }
