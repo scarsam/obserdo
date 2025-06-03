@@ -10,6 +10,7 @@ import {
   tasksZodSchema,
 } from "../db/schema.js";
 import { and, asc, eq } from "drizzle-orm";
+import { buildTaskTree } from "../utils/task-tree-builder.js";
 
 export const todosApp = new Hono<{
   Variables: {
@@ -51,7 +52,9 @@ export const todosApp = new Hono<{
 
     if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
 
-    return c.json(todo);
+    const nestedTasks = buildTaskTree(todo.tasks);
+
+    return c.json({ ...todo, tasks: nestedTasks });
   })
   .put("/:id", zValidator("json", todosZodSchema), async (c) => {
     const user = c.get("user");
@@ -99,7 +102,7 @@ export const todosApp = new Hono<{
 
     const { id } = c.req.param();
 
-    const { name } = c.req.valid("json");
+    const { name, parentTaskId } = c.req.valid("json");
 
     // First, optionally verify that todo belongs to this user
     // Todo: Do I need to fetch first?
@@ -119,6 +122,7 @@ export const todosApp = new Hono<{
       .values({
         name,
         todoListId: todo.id,
+        parentTaskId: parentTaskId,
         completed: false, // default
         createdAt: new Date(),
         updatedAt: new Date(),

@@ -11,13 +11,17 @@ import {
 import { Button } from "../ui/button";
 import { CirclePlus } from "lucide-react";
 import { CreateTaskForm } from "./create-task-form";
+import type { Table } from "@tanstack/react-table";
+import type { Task } from "@/api/todos";
 
 export function CreateTaskDialog({
+  table,
   todoListId,
   parentTaskId,
 }: {
+  table: Table<Task>;
   todoListId: number;
-  parentTaskId: number | null;
+  parentTaskId?: number;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -40,6 +44,7 @@ export function CreateTaskDialog({
         </DialogHeader>
 
         <CreateTaskForm
+          table={table}
           parentTaskId={parentTaskId}
           todoListId={todoListId}
           onSuccess={() => setOpen(false)}

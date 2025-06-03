@@ -3,19 +3,27 @@ import { Trash2 } from "lucide-react";
 import { Button } from "../ui/button";
 import { CreateTaskDialog } from "./create-task-dialog";
 import { useDeleteTaskMutation } from "@/mutations/task";
+import type { Task } from "@/api/todos";
+import type { Table } from "@tanstack/react-table";
 
 export function TaskRowActions({
+  table,
   todoListId,
   parentTaskId,
 }: {
+  table: Table<Task>;
   todoListId: number;
-  parentTaskId: number | null;
+  parentTaskId?: number;
 }) {
   const mutation = useDeleteTaskMutation(todoListId);
 
   return (
     <div className="flex">
-      <CreateTaskDialog todoListId={todoListId} parentTaskId={parentTaskId} />
+      <CreateTaskDialog
+        table={table}
+        todoListId={todoListId}
+        parentTaskId={parentTaskId}
+      />
       <Button
         variant="ghost"
         onClick={() => {
@@ -23,6 +31,8 @@ export function TaskRowActions({
             id: `${todoListId}`,
             taskId: `${parentTaskId}`,
           });
+
+          console.log("parentTaskId!!", parentTaskId);
         }}
       >
         <Trash2 />

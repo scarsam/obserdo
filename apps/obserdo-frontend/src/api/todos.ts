@@ -102,6 +102,7 @@ export async function createTask(newTask: CreateTask) {
     },
     json: {
       name: newTask.name,
+      parentTaskId: newTask.parentTaskId,
     },
   });
 

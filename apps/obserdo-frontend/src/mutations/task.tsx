@@ -18,12 +18,15 @@ export function useCreateTaskMutation(todoId: number) {
 
       const previousTodo = queryClient.getQueryData(["todo", `${todoId}`]);
 
+      console.log("newTask", newTask);
+
       const optimisticTask = {
         id: Math.random(), // temporary ID
         name: newTask.name,
         completed: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
+        parentTaskId: newTask.parentTaskId ?? null,
       };
 
       queryClient.setQueryData(["todo", `${todoId}`], (old: any) => {

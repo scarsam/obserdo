@@ -35,7 +35,7 @@ function App() {
       </li>
       {todo.tasks && todo.tasks.length > 0 ? (
         <DataTable data={todo.tasks} columns={taskColumns}>
-          <CreateTaskDialog todo={todo} />
+          <CreateTaskDialog todoListId={todo.id} />
         </DataTable>
       ) : (
         <p className="text-gray-500 text-center">No tasks yet.</p>

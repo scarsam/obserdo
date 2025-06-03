@@ -9,7 +9,12 @@ import {
   pgEnum,
   type AnyPgColumn,
 } from "drizzle-orm/pg-core";
-import { createInsertSchema } from "drizzle-zod";
+import {
+  createInsertSchema,
+  createSelectSchema,
+  type CreateSelectSchema,
+} from "drizzle-zod";
+import type z from "zod/v4";
 
 export const todoStatus = pgEnum("todo_status", [
   "todo",
@@ -141,6 +146,9 @@ export const todosZodSchema = createInsertSchema(todos).omit({ userId: true });
 export const tasksZodSchema = createInsertSchema(tasks).omit({
   todoListId: true,
 });
+
+const tasksZodSelectSchema = createSelectSchema(tasks);
+export type Task = z.infer<typeof tasksZodSelectSchema>;
 
 export const schema = {
   todos,

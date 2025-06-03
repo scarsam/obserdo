@@ -23,7 +23,7 @@ export function TodoRowActions({ todo }: { todo: Todo }) {
         }}
       >
         <Archive />
-        <span className="sr-only">Open menu</span>
+        <span className="sr-only">Archive</span>
       </Button>
     </div>
   );

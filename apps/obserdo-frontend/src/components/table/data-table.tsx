@@ -1,10 +1,12 @@
 import {
   type ColumnDef,
   type ColumnFiltersState,
+  type ExpandedState,
   type SortingState,
   type VisibilityState,
   flexRender,
   getCoreRowModel,
+  getExpandedRowModel,
   getFacetedRowModel,
   getFacetedUniqueValues,
   getFilteredRowModel,
@@ -24,12 +26,16 @@ import {
 
 import { useState, type PropsWithChildren } from "react";
 
-interface DataTableProps<TData, TValue> {
+export interface ExpandableRow<T> {
+  children?: T[];
+}
+
+interface DataTableProps<TData extends ExpandableRow<TData>, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends ExpandableRow<TData>, TValue>({
   children,
   columns,
   data,
@@ -38,6 +44,7 @@ export function DataTable<TData, TValue>({
   const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
   const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
   const [sorting, setSorting] = useState<SortingState>([]);
+  const [expanded, setExpanded] = useState<ExpandedState>({});
 
   const table = useReactTable({
     data,
@@ -47,7 +54,13 @@ export function DataTable<TData, TValue>({
       columnVisibility,
       rowSelection,
       columnFilters,
+      expanded,
     },
+    onExpandedChange: setExpanded,
+    getExpandedRowModel: getExpandedRowModel(),
+    getSubRows: (row) => row.children ?? [],
+    getRowId: (row) => String(row.id), // <-- important!
+
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,

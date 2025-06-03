@@ -4,18 +4,22 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useCreateTaskMutation } from "@/mutations/task";
+import type { Table } from "@tanstack/react-table";
+import type { Task } from "@/api/todos";
 
 const taskSchema = z.object({
   name: z.string().min(1, "Title is required"),
 });
 
 export const CreateTaskForm = ({
+  table,
   parentTaskId,
   todoListId,
   onSuccess,
   onCancel,
 }: {
-  parentTaskId: number | null;
+  table: Table<Task>;
+  parentTaskId?: number;
   todoListId: number;
   onSuccess?: () => void;
   onCancel?: () => void;
@@ -36,6 +40,14 @@ export const CreateTaskForm = ({
         name: value.name,
         parentTaskId: parentTaskId ? parentTaskId : undefined,
       });
+
+      if (parentTaskId) {
+        const parentRow = table.getRow(parentTaskId.toString());
+        if (parentRow && parentRow.getCanExpand()) {
+          parentRow.toggleExpanded(true);
+        }
+      }
+
       form.reset();
       onSuccess?.();
     },
