@@ -9,32 +9,39 @@ import {
   DialogClose,
 } from "../ui/dialog";
 import { Button } from "../ui/button";
-import { Plus } from "lucide-react";
+import { CirclePlus } from "lucide-react";
 import { CreateTaskForm } from "./create-task-form";
 import type { Todo } from "@/api/todos";
 
-export function CreateTaskDialog({ todo }: { todo: Todo }) {
+export function CreateTaskDialog({
+  todo,
+  subTask,
+}: {
+  todo: Todo;
+  subTask?: boolean;
+}) {
   const [open, setOpen] = useState(false);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="ghost" size="lg">
-          <Plus /> {false ? "Add Sub-task" : "Add Task"}
+          <CirclePlus /> {!subTask && "Add Task"}
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-lg">
         <DialogHeader>
           <DialogTitle>
-            {false ? "Create New Sub-task" : "Create New Task"}
+            {subTask ? "Create New Sub-task" : "Create New Task"}
           </DialogTitle>
           <DialogDescription>
             Fill in the fields and save to add{" "}
-            {false ? "a new sub-task." : "a new task."}
+            {subTask ? "a new sub-task." : "a new task."}
           </DialogDescription>
         </DialogHeader>
 
         <CreateTaskForm
+          subTask={subTask}
           todo={todo}
           onSuccess={() => setOpen(false)}
           onCancel={() => setOpen(false)}

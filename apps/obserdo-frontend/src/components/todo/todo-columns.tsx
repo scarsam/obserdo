@@ -1,10 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { DataTableColumnHeader } from "../table/data-table-column-header";
-import { DataTableRowActions } from "../table/data-table-row-actions";
 import type { Todo } from "@/api/todos";
 import { CheckCircle, Circle, CircleOff, Timer } from "lucide-react";
 import { Link } from "@tanstack/react-router";
+import { TodoRowActions } from "./todo-row-actions";
 
 export const statuses = [
   {
@@ -143,6 +143,6 @@ export const todoColumns: ColumnDef<Todo>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Actions" />
     ),
-    cell: ({ row }) => <DataTableRowActions todo={row.original} />,
+    cell: ({ row }) => <TodoRowActions todo={row.original} />,
   },
 ];

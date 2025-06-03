@@ -3,30 +3,25 @@ import { z } from "zod/v4";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { queryClient } from "@/lib/react-query";
-import { useMutation } from "@tanstack/react-query";
-import { createTask, type Todo } from "@/api/todos";
-import { createTaskMutation } from "@/mutations/task";
+import { useCreateTaskMutation } from "@/mutations/task";
+import type { Todo } from "@/api/todos";
 
 const taskSchema = z.object({
   name: z.string().min(1, "Title is required"),
 });
 
 export const CreateTaskForm = ({
+  subTask,
   todo,
   onSuccess,
   onCancel,
 }: {
+  subTask?: boolean;
   todo: Todo;
   onSuccess?: () => void;
   onCancel?: () => void;
 }) => {
-  // const mutation = useMutation({
-  //   mutationFn: createTask,
-  //   onSuccess: () =>
-  //     queryClient.invalidateQueries({ queryKey: ["todo", `${todo.id}`] }),
-  // });
-  const mutation = createTaskMutation(todo.id);
+  const mutation = useCreateTaskMutation(todo.id);
 
   const form = useForm({
     defaultValues: {

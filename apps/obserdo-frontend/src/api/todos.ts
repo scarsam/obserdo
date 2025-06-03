@@ -29,6 +29,7 @@ type TodoWithError = Exclude<InferResponseType<typeof $todoGet>, "error">;
 type RemoveError<T> = T extends { error: string } ? never : T;
 type TodoWithoutError = RemoveError<TodoWithError>;
 export type Todo = Omit<TodoWithoutError, "tasks">;
+export type TodoWithTasks = TodoWithoutError;
 export type Task = Pick<TodoWithoutError, "tasks">["tasks"][number];
 
 export const todosQueryOptions = () =>

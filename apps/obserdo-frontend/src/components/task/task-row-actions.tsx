@@ -1,16 +1,16 @@
-import { Archive } from "lucide-react";
+import { Trash2 } from "lucide-react";
 
 import { Button } from "../ui/button";
-import { EditTodoDialog } from "../todo/edit-todo-dialog";
 import type { Todo } from "@/api/todos";
 import { editTodoMutation } from "@/mutations/todo";
+import { CreateTaskDialog } from "./create-task-dialog";
 
-export function DataTableRowActions({ todo }: { todo: Todo }) {
+export function TaskRowActions({ todo }: { todo: Todo }) {
   const mutation = editTodoMutation();
 
   return (
     <div className="flex">
-      <EditTodoDialog todo={todo} />
+      <CreateTaskDialog todo={todo} subTask />
       <Button
         variant="ghost"
         onClick={() => {
@@ -22,8 +22,8 @@ export function DataTableRowActions({ todo }: { todo: Todo }) {
           });
         }}
       >
-        <Archive />
-        <span className="sr-only">Open menu</span>
+        <Trash2 />
+        <span className="sr-only">Delete</span>
       </Button>
     </div>
   );

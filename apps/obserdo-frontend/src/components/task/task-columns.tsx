@@ -1,10 +1,10 @@
 import { type ColumnDef } from "@tanstack/react-table";
 
 import { DataTableColumnHeader } from "../table/data-table-column-header";
-import { DataTableRowActions } from "../table/data-table-row-actions";
+import { TaskRowActions } from "./task-row-actions";
 import type { Task } from "@/api/todos";
 import { Checkbox } from "../ui/checkbox";
-import { editTaskMutation } from "@/mutations/task";
+import { useEditTaskMutation } from "@/mutations/task";
 
 export const taskColumns: ColumnDef<Task>[] = [
   {
@@ -22,7 +22,7 @@ export const taskColumns: ColumnDef<Task>[] = [
     ),
     cell: ({ row }) => {
       const { id, name, todoListId, completed } = row.original;
-      const mutation = editTaskMutation(todoListId);
+      const mutation = useEditTaskMutation(todoListId);
 
       return (
         <Checkbox
@@ -95,6 +95,6 @@ export const taskColumns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Actions" />
     ),
-    // cell: ({ row }) => <DataTableRowActions todo={row.original} />,
+    cell: ({ row }) => <TaskRowActions todo={row.original} />,
   },
 ];
