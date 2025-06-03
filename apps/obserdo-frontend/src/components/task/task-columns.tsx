@@ -2,7 +2,7 @@ import { type ColumnDef } from "@tanstack/react-table";
 
 import { DataTableColumnHeader } from "../table/data-table-column-header";
 import { TaskRowActions } from "./task-row-actions";
-import type { Task } from "@/api/todos";
+import type { Task, TodoWithTasks } from "@/api/todos";
 import { Checkbox } from "../ui/checkbox";
 import { useEditTaskMutation } from "@/mutations/task";
 
@@ -95,6 +95,11 @@ export const taskColumns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Actions" />
     ),
-    cell: ({ row }) => <TaskRowActions todo={row.original} />,
+    cell: ({ row }) => (
+      <TaskRowActions
+        todoListId={row.original.todoListId}
+        parentTaskId={row.original.id}
+      />
+    ),
   },
 ];

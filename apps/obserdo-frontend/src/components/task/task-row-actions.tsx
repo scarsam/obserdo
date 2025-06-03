@@ -1,24 +1,27 @@
 import { Trash2 } from "lucide-react";
 
 import { Button } from "../ui/button";
-import type { Todo } from "@/api/todos";
-import { editTodoMutation } from "@/mutations/todo";
 import { CreateTaskDialog } from "./create-task-dialog";
+import { useDeleteTaskMutation } from "@/mutations/task";
 
-export function TaskRowActions({ todo }: { todo: Todo }) {
-  const mutation = editTodoMutation();
+export function TaskRowActions({
+  todoListId,
+  parentTaskId,
+}: {
+  todoListId: number;
+  parentTaskId: number | null;
+}) {
+  const mutation = useDeleteTaskMutation(todoListId);
 
   return (
     <div className="flex">
-      <CreateTaskDialog todo={todo} subTask />
+      <CreateTaskDialog todoListId={todoListId} parentTaskId={parentTaskId} />
       <Button
         variant="ghost"
         onClick={() => {
           mutation.mutate({
-            id: `${todo.id}`,
-            name: todo.name,
-            description: todo.description,
-            status: "archived",
+            id: `${todoListId}`,
+            taskId: `${parentTaskId}`,
           });
         }}
       >

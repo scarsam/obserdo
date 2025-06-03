@@ -159,4 +159,33 @@ export const todosApp = new Hono<{
       .returning();
 
     return c.json(updatedTask[0]);
+  })
+  .delete("/:id/tasks/:taskId", async (c) => {
+    const user = c.get("user");
+
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { id, taskId } = c.req.param();
+
+    // First, optionally verify that todo belongs to this user
+    const todo = await db.query.todos.findFirst({
+      where: and(
+        eq(todosSchema.id, Number(id)),
+        eq(todosSchema.userId, user.id)
+      ),
+    });
+
+    if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
+
+    // Delete the task
+    await db
+      .delete(tasksSchema)
+      .where(
+        and(
+          eq(tasksSchema.id, Number(taskId)),
+          eq(tasksSchema.todoListId, todo.id)
+        )
+      );
+
+    return c.json({ success: true });
   });

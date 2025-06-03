@@ -1,4 +1,10 @@
-import { createTask, editTask, type TodoWithTasks } from "@/api/todos";
+import {
+  createTask,
+  deleteTask,
+  editTask,
+  type Task,
+  type TodoWithTasks,
+} from "@/api/todos";
 import { queryClient } from "@/lib/react-query";
 import { useMutation } from "@tanstack/react-query";
 
@@ -86,3 +92,62 @@ export const useEditTaskMutation = (todoListId?: number) =>
       queryClient.invalidateQueries({ queryKey: ["todo", `${todoListId}`] });
     },
   });
+
+export const useDeleteTaskMutation = (todoListId?: number) => {
+  return useMutation({
+    mutationFn: deleteTask,
+    onMutate: async (newTask) => {
+      // if (!todoListId) return;
+
+      await queryClient.cancelQueries({
+        queryKey: ["todo", `${todoListId}`],
+      });
+
+      const previousTodo = queryClient.getQueryData<TodoWithTasks>([
+        "todo",
+        `${todoListId}`,
+      ]);
+
+      queryClient.setQueryData<TodoWithTasks>(
+        ["todo", `${todoListId}`],
+        (old) => {
+          if (!old) return old;
+
+          // Optional: recursively remove sub-tasks
+          const removeTaskAndSubtasks = (
+            tasks: Task[],
+            idToRemove: number
+          ): Task[] => {
+            return tasks
+              .filter((task) => task.id !== idToRemove)
+              .filter(
+                (task) => task.parentTaskId !== idToRemove // remove sub-tasks if desired
+              );
+          };
+
+          return {
+            ...old,
+            tasks: removeTaskAndSubtasks(old.tasks, Number(newTask.taskId)),
+          };
+        }
+      );
+
+      return { previousTodo };
+    },
+
+    onError: (_err, _taskId, context) => {
+      if (todoListId && context?.previousTodo) {
+        queryClient.setQueryData(
+          ["todo", `${todoListId}`],
+          context.previousTodo
+        );
+      }
+    },
+
+    onSettled: () => {
+      if (todoListId) {
+        queryClient.invalidateQueries({ queryKey: ["todo", `${todoListId}`] });
+      }
+    },
+  });
+};

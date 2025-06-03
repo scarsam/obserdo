@@ -24,6 +24,9 @@ const $taskPut = client.api.todos[":id"].tasks[":taskId"].$put;
 type EditTask = InferRequestType<typeof $taskPut>["json"] &
   InferRequestType<typeof $taskPut>["param"];
 
+const $taskDelete = client.api.todos[":id"].tasks[":taskId"].$delete;
+type DeleteTask = InferRequestType<typeof $taskDelete>["param"];
+
 const $todoGet = client.api.todos[":id"].$get;
 type TodoWithError = Exclude<InferResponseType<typeof $todoGet>, "error">;
 type RemoveError<T> = T extends { error: string } ? never : T;
@@ -120,6 +123,19 @@ export async function editTask(editTask: EditTask) {
   });
 
   if (!res.ok) throw new Error("Failed to create todo");
+
+  return res.json();
+}
+
+export async function deleteTask(deleteTask: DeleteTask) {
+  const res = await client.api.todos[":id"].tasks[":taskId"].$delete({
+    param: {
+      id: deleteTask.id,
+      taskId: deleteTask.taskId,
+    },
+  });
+
+  if (!res.ok) throw new Error("Failed to delete task");
 
   return res.json();
 }

@@ -4,24 +4,23 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useCreateTaskMutation } from "@/mutations/task";
-import type { Todo } from "@/api/todos";
 
 const taskSchema = z.object({
   name: z.string().min(1, "Title is required"),
 });
 
 export const CreateTaskForm = ({
-  subTask,
-  todo,
+  parentTaskId,
+  todoListId,
   onSuccess,
   onCancel,
 }: {
-  subTask?: boolean;
-  todo: Todo;
+  parentTaskId: number | null;
+  todoListId: number;
   onSuccess?: () => void;
   onCancel?: () => void;
 }) => {
-  const mutation = useCreateTaskMutation(todo.id);
+  const mutation = useCreateTaskMutation(todoListId);
 
   const form = useForm({
     defaultValues: {
@@ -32,7 +31,11 @@ export const CreateTaskForm = ({
       onChange: taskSchema,
     },
     onSubmit: ({ value }) => {
-      mutation.mutate({ id: `${todo.id}`, name: value.name });
+      mutation.mutate({
+        id: `${todoListId}`,
+        name: value.name,
+        parentTaskId: parentTaskId ? parentTaskId : undefined,
+      });
       form.reset();
       onSuccess?.();
     },
@@ -53,7 +56,7 @@ export const CreateTaskForm = ({
             return (
               <>
                 <Label className="flex-col items-start mt-3" htmlFor="name">
-                  New Task
+                  {parentTaskId ? "New Sub-task" : "New Task"}
                   <Input
                     id={field.name}
                     name={field.name}
@@ -71,7 +74,11 @@ export const CreateTaskForm = ({
           selector={(state) => [state.canSubmit, state.isSubmitting]}
           children={([canSubmit, isSubmitting]) => (
             <Button type="submit" disabled={!canSubmit} className="w-full mt-4">
-              {isSubmitting ? "..." : "Add Task"}
+              {isSubmitting
+                ? "..."
+                : parentTaskId
+                ? "Add Sub-task"
+                : "Add Task"}
             </Button>
           )}
         />
