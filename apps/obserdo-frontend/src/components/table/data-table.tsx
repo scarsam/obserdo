@@ -26,16 +26,12 @@ import {
 
 import { useState, type PropsWithChildren } from "react";
 
-export interface ExpandableRow<T> {
-  children?: T[];
-}
-
-interface DataTableProps<TData extends ExpandableRow<TData>, TValue> {
+interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
-export function DataTable<TData extends ExpandableRow<TData>, TValue>({
+export function DataTable<TData, TValue>({
   children,
   columns,
   data,
@@ -58,7 +54,8 @@ export function DataTable<TData extends ExpandableRow<TData>, TValue>({
     },
     onExpandedChange: setExpanded,
     getExpandedRowModel: getExpandedRowModel(),
-    getSubRows: (row) => row.children ?? [],
+    getSubRows: (row: any) => row?.children ?? [],
+    getRowId: (row) => row.id,
     enableRowSelection: true,
     onRowSelectionChange: setRowSelection,
     onSortingChange: setSorting,

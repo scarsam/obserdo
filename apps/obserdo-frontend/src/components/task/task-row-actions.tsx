@@ -31,8 +31,6 @@ export function TaskRowActions({
             id: `${todoListId}`,
             taskId: `${parentTaskId}`,
           });
-
-          console.log("parentTaskId!!", parentTaskId);
         }}
       >
         <Trash2 />

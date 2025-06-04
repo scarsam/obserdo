@@ -5,7 +5,7 @@ type TaskWithChildren = Task & {
 };
 
 export function buildTaskTree(tasks: Task[]): TaskWithChildren[] {
-  const taskMap = new Map<number, TaskWithChildren>();
+  const taskMap = new Map<string, TaskWithChildren>();
   const roots: TaskWithChildren[] = [];
 
   for (const task of tasks) {

@@ -18,7 +18,7 @@ export const CreateTaskForm = ({
   onSuccess,
   onCancel,
 }: {
-  table: Table<Task>;
+  table?: Table<Task>;
   parentTaskId?: string;
   todoListId: string;
   onSuccess?: () => void;
@@ -42,7 +42,7 @@ export const CreateTaskForm = ({
       });
 
       if (parentTaskId) {
-        const parentRow = table.getRow(parentTaskId.toString());
+        const parentRow = table?.getRow(parentTaskId);
         if (parentRow && parentRow.getCanExpand()) {
           parentRow.toggleExpanded(true);
         }

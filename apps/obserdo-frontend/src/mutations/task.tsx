@@ -18,19 +18,50 @@ export function useCreateTaskMutation(todoId: string) {
 
       const previousTodo = queryClient.getQueryData(["todo", todoId]);
 
-      console.log("newTask", newTask);
-
       const optimisticTask = {
-        id: Math.random(), // temporary ID
+        id: Math.random().toString(),
         name: newTask.name,
         completed: false,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
         parentTaskId: newTask.parentTaskId ?? null,
+        todoListId: todoId,
+        children: [],
       };
 
-      queryClient.setQueryData(["todo", todoId], (old: any) => {
+      queryClient.setQueryData(["todo", todoId], (old: TodoWithTasks) => {
         if (!old) return old;
+
+        function insertSubtask(tasks: Task[]): Task[] {
+          return tasks.map((task) => {
+            if (task.id === newTask.parentTaskId) {
+              return {
+                ...task,
+                children: [...task.children, optimisticTask],
+              };
+            }
+
+            if (task.children.length > 0) {
+              const updatedChildren = insertSubtask(task.children);
+              // Only return a new object if children changed
+              if (updatedChildren !== task.children) {
+                return {
+                  ...task,
+                  children: updatedChildren,
+                };
+              }
+            }
+
+            return task; // return original object if unchanged
+          });
+        }
+
+        if (newTask.parentTaskId) {
+          return {
+            ...old,
+            tasks: insertSubtask(old.tasks),
+          };
+        }
 
         return {
           ...old,
@@ -63,16 +94,37 @@ export const useEditTaskMutation = (todoListId?: string) =>
 
       const previousTodo = queryClient.getQueryData(["todo", todoListId]);
 
+      const updateTaskById = (
+        tasks: Task[],
+        id: string,
+        updater: (task: Task) => Task
+      ): Task[] => {
+        return tasks.map((task) => {
+          if (task.id === id) {
+            return updater(task);
+          }
+
+          if (task.children?.length) {
+            const updatedChildren = updateTaskById(task.children, id, updater);
+            if (updatedChildren !== task.children) {
+              return { ...task, children: updatedChildren };
+            }
+          }
+
+          return task;
+        });
+      };
+
       queryClient.setQueryData(["todo", todoListId], (old: TodoWithTasks) => {
         if (!old) return old;
 
         return {
           ...old,
-          tasks: old.tasks.map((task) =>
-            task.id === newTask.taskId
-              ? { ...task, completed: newTask.completed }
-              : task
-          ),
+          tasks: updateTaskById(old.tasks, newTask.taskId, (task) => ({
+            ...task,
+            completed: !!newTask.completed,
+            updatedAt: new Date().toISOString(),
+          })),
         };
       });
 
