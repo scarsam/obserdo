@@ -2,6 +2,9 @@ import {
   createTask,
   deleteTask,
   editTask,
+  editTasksBulk,
+  type BulkEditTask,
+  type EditTask,
   type Task,
   type TodoWithTasks,
 } from "@/api/todos";
@@ -132,6 +135,85 @@ export const useEditTaskMutation = (todoListId?: string) =>
     },
 
     onError: (_err, _newTask, context) => {
+      if (context?.previousTodo) {
+        queryClient.setQueryData(["todo", todoListId], context.previousTodo);
+      }
+    },
+
+    onSettled: () => {
+      queryClient.invalidateQueries({ queryKey: ["todo", todoListId] });
+    },
+  });
+
+export const useEditTasksBulkMutation = (todoListId?: string) =>
+  useMutation({
+    mutationFn: (edits: BulkEditTask[]) => {
+      if (!todoListId) throw new Error("Missing todoListId");
+      return editTasksBulk(todoListId, edits);
+    },
+    onMutate: async (edits) => {
+      await queryClient.cancelQueries({ queryKey: ["todo", todoListId] });
+
+      const previousTodo = queryClient.getQueryData<TodoWithTasks>([
+        "todo",
+        todoListId,
+      ]);
+
+      const editsMap = new Map<string, BulkEditTask>(
+        edits.map((edit) => [edit.id!, edit])
+      );
+
+      const updateTasksById = (
+        tasks: Task[],
+        editsMap: Map<string, BulkEditTask>
+      ): Task[] => {
+        return tasks.map((task) => {
+          const edit = editsMap.get(task.id);
+          let updatedTask = task;
+
+          if (edit) {
+            updatedTask = {
+              ...task,
+              completed:
+                typeof edit.completed === "boolean"
+                  ? edit.completed
+                  : task.completed,
+              name: edit.name ?? task.name,
+              updatedAt: new Date().toISOString(),
+            };
+          }
+
+          if (updatedTask.children?.length) {
+            const updatedChildren = updateTasksById(
+              updatedTask.children,
+              editsMap
+            );
+
+            if (updatedChildren !== updatedTask.children) {
+              updatedTask = { ...updatedTask, children: updatedChildren };
+            }
+          }
+
+          return updatedTask;
+        });
+      };
+
+      queryClient.setQueryData(
+        ["todo", todoListId],
+        (old: TodoWithTasks | undefined) => {
+          if (!old) return old;
+
+          return {
+            ...old,
+            tasks: updateTasksById(old.tasks, editsMap),
+          };
+        }
+      );
+
+      return { previousTodo };
+    },
+
+    onError: (_err, _edits, context) => {
       if (context?.previousTodo) {
         queryClient.setQueryData(["todo", todoListId], context.previousTodo);
       }

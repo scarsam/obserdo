@@ -3,81 +3,110 @@ import { type ColumnDef } from "@tanstack/react-table";
 import { DataTableColumnHeader } from "../table/data-table-column-header";
 import { TaskRowActions } from "./task-row-actions";
 import type { Task } from "@/api/todos";
-import { Checkbox } from "../ui/checkbox";
-import { useEditTaskMutation } from "@/mutations/task";
 import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
+import { Checkbox } from "../ui/checkbox";
+import { cn } from "@/lib/utils";
+import { useEditTasksBulkMutation } from "@/mutations/task";
 
 export const taskColumns: ColumnDef<Task>[] = [
   {
-    id: "select",
+    accessorKey: "name",
     header: ({ table }) => (
-      <Checkbox
-        checked={
-          table.getIsAllPageRowsSelected() ||
-          (table.getIsSomePageRowsSelected() && "indeterminate")
-        }
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-        className="translate-y-[2px]"
-      />
+      <>
+        <Checkbox
+          className={cn(table.getIsSomeRowsSelected() && "border-blue-500")}
+          checked={table.getIsAllRowsSelected()}
+          onClick={table.getToggleAllRowsSelectedHandler()}
+        />
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={table.getToggleAllRowsExpandedHandler()}
+          aria-label={
+            table.getIsAllRowsExpanded() ? "Collapse row" : "Expand row"
+          }
+        >
+          {table.getIsAllRowsExpanded() ? (
+            <ChevronDown className="h-4 w-4" />
+          ) : (
+            <ChevronRight className="h-4 w-4" />
+          )}
+        </Button>
+        Name
+      </>
     ),
-    cell: ({ row }) => {
-      const { id, name, todoListId, completed } = row.original;
-      const mutation = useEditTaskMutation(todoListId);
+    cell: ({ row, getValue, table }) => {
+      const mutation = useEditTasksBulkMutation(row.original.todoListId);
+      const selectedRows = table.getState().rowSelection;
+
+      if (Object.keys(selectedRows).length > 0) {
+        const selectedRows = table.getSelectedRowModel().flatRows.map((r) => ({
+          id: r.original.id,
+          name: r.original.name,
+          completed: r.original.completed,
+          parentTaskId: r.original.parentTaskId,
+        }));
+        mutation.mutate(selectedRows);
+        //         name: string;
+        // id?: string | undefined;
+        // createdAt?: Date | undefined;
+        // updatedAt?: Date | undefined;
+        // parentTaskId?: string | null | undefined;
+        // completed?: boolean | undefined;
+      }
 
       return (
-        <Checkbox
-          checked={completed}
-          onCheckedChange={(value) => {
-            row.toggleSelected(!!value);
-            mutation.mutate({
-              id: `${todoListId}`, // todo: clean these names up
-              taskId: `${id}`,
-              name: name,
-              completed: !!value,
-            });
+        <div
+          style={{
+            // Since rows are flattened by default,
+            // we can use the row.depth property
+            // and paddingLeft to visually indicate the depth
+            // of the row
+            paddingLeft: `${row.depth * 2}rem`,
           }}
-          aria-label="Select row"
-          className="translate-y-[2px]"
-        />
+        >
+          <div>
+            <Checkbox
+              className={cn(
+                row.subRows.length > 0 &&
+                  row.getIsSomeSelected() &&
+                  !row.getIsAllSubRowsSelected() &&
+                  "border-blue-500"
+              )}
+              checked={
+                row.getIsSomeSelected()
+                  ? false
+                  : row.subRows.length
+                  ? row.getIsAllSubRowsSelected()
+                  : row.getIsSelected()
+              }
+              onCheckedChange={row.getToggleSelectedHandler()}
+              onClick={() =>
+                console.log("click", table.getState().rowSelection)
+              }
+            />
+            {row.getCanExpand() && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => row.toggleExpanded()}
+                aria-label={row.getIsExpanded() ? "Collapse row" : "Expand row"}
+              >
+                {row.getIsExpanded() ? (
+                  <ChevronDown className="h-4 w-4" />
+                ) : (
+                  <ChevronRight className="h-4 w-4" />
+                )}
+              </Button>
+            )}
+            {getValue<boolean>()}
+          </div>
+        </div>
       );
     },
-    enableSorting: false,
-    enableHiding: false,
   },
-  {
-    accessorFn: (row) => row.name,
-    accessorKey: "name",
-    header: ({ column }) => (
-      <DataTableColumnHeader column={column} title="Name" />
-    ),
-    cell: ({ row }) => (
-      <div
-        style={{ paddingLeft: `${row.depth * 15}px` }}
-        className="flex items-center"
-      >
-        {row.getCanExpand() && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mr-2 p-0"
-            onClick={() => row.toggleExpanded()}
-            aria-label={row.getIsExpanded() ? "Collapse row" : "Expand row"}
-          >
-            {row.getIsExpanded() ? (
-              <ChevronDown className="h-4 w-4" />
-            ) : (
-              <ChevronRight className="h-4 w-4" />
-            )}
-          </Button>
-        )}
-        <span>{row.original.name}</span>
-      </div>
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
+
   {
     accessorKey: "createdAt",
     header: ({ column }) => (

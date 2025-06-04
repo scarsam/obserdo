@@ -21,8 +21,13 @@ type CreateTask = InferRequestType<typeof $tasksPost>["json"] &
   InferRequestType<typeof $tasksPost>["param"];
 
 const $taskPut = client.api.todos[":id"].tasks[":taskId"].$put;
-type EditTask = InferRequestType<typeof $taskPut>["json"] &
+export type EditTask = InferRequestType<typeof $taskPut>["json"] &
   InferRequestType<typeof $taskPut>["param"];
+
+const $bulkTaskPut = client.api.todos[":id"].tasks["bulk-edit"].$put;
+export type BulkEditTask = InferRequestType<
+  typeof $bulkTaskPut
+>["json"][number];
 
 const $taskDelete = client.api.todos[":id"].tasks[":taskId"].$delete;
 type DeleteTask = InferRequestType<typeof $taskDelete>["param"];
@@ -124,6 +129,17 @@ export async function editTask(editTask: EditTask) {
   });
 
   if (!res.ok) throw new Error("Failed to create todo");
+
+  return res.json();
+}
+
+export async function editTasksBulk(todoListId: string, edits: BulkEditTask[]) {
+  const res = await client.api.todos[":id"].tasks["bulk-edit"].$put({
+    param: { id: todoListId },
+    json: edits,
+  });
+
+  if (!res.ok) throw new Error("Failed to bulk edit tasks");
 
   return res.json();
 }

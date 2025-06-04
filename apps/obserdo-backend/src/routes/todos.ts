@@ -148,6 +148,54 @@ export const todosApp = new Hono<{
 
     return c.json(updatedTask[0]);
   })
+  .put(
+    "/:id/tasks/bulk-edit",
+    zValidator("json", tasksZodSchema.array()),
+    async (c) => {
+      const user = c.get("user");
+      if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+      const { id } = c.req.param();
+      const edits = c.req.valid("json");
+
+      // Verify ownership
+      const todo = await db.query.todos.findFirst({
+        where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
+      });
+
+      if (!todo)
+        return c.json({ error: "Todo not found or unauthorized" }, 404);
+
+      // Run individual updates inside a transaction
+      const updatedTasks = await db.transaction(async (tx) => {
+        const updates = [];
+
+        for (const edit of edits) {
+          if (!edit.id || !id) continue;
+
+          const updated = await tx
+            .update(tasksSchema)
+            .set({
+              name: edit.name,
+              completed: edit.completed,
+              updatedAt: new Date(),
+            })
+            .where(
+              and(eq(tasksSchema.id, edit.id), eq(tasksSchema.todoListId, id))
+            )
+            .returning();
+
+          if (updated.length > 0) {
+            updates.push(updated[0]);
+          }
+        }
+
+        return updates;
+      });
+
+      return c.json(updatedTasks);
+    }
+  )
   .delete("/:id/tasks/:taskId", async (c) => {
     const user = c.get("user");
 
