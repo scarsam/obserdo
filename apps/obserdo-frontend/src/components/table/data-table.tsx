@@ -2,7 +2,6 @@ import {
   type ColumnDef,
   type ColumnFiltersState,
   type ExpandedState,
-  type Row,
   type SortingState,
   type VisibilityState,
   flexRender,
@@ -25,17 +24,14 @@ import {
   TableRow,
 } from "../ui/table";
 
-import { useEffect, useState, type PropsWithChildren } from "react";
-import type { BulkEditTask } from "@/api/todos";
+import { useState, type PropsWithChildren } from "react";
 
 interface DataTableProps<TData, TValue> {
-  handleBulkSelect?: (rows: BulkEditTask[]) => void;
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
 }
 
 export function DataTable<TData, TValue>({
-  handleBulkSelect,
   children,
   columns,
   data,
@@ -72,25 +68,6 @@ export function DataTable<TData, TValue>({
     getFacetedRowModel: getFacetedRowModel(),
     getFacetedUniqueValues: getFacetedUniqueValues(),
   });
-
-  // useEffect(() => {
-  //   const selectedRows = table.getSelectedRowModel().flatRows;
-  //   if (selectedRows.length > 0 && handleBulkSelect) {
-  //     console.log("Selected rows:", selectedRows);
-  //     const rows = selectedRows.map((r) => ({
-  //       id: r.id,
-  //       name: r.original.name,
-  //       completed: !r.original.completed,
-  //       parentTaskId: r.original.parentTaskId,
-  //     }));
-  //     handleBulkSelect(rows);
-  //   }
-  // }, [
-  //   table
-  //     .getSelectedRowModel()
-  //     .flatRows.map((r) => r.id)
-  //     .join(","),
-  // ]);
 
   return (
     <div className="space-y-4">
