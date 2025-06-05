@@ -8,6 +8,7 @@ import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useEditTasksBulkMutation } from "@/mutations/task";
+import { EditTaskDialog } from "./edit-task-dialog";
 
 export const taskColumns: ColumnDef<Task>[] = [
   {
@@ -54,7 +55,7 @@ export const taskColumns: ColumnDef<Task>[] = [
         </>
       );
     },
-    cell: ({ row, getValue }) => {
+    cell: ({ row, getValue, table }) => {
       const mutation = useEditTasksBulkMutation(row.original.todoListId);
 
       return (
@@ -101,7 +102,13 @@ export const taskColumns: ColumnDef<Task>[] = [
                 )}
               </Button>
             )}
-            {getValue<boolean>()}
+            {/* {getValue<boolean>()} */}
+            <EditTaskDialog
+              text={getValue<string>()}
+              table={table}
+              todoListId={"1"}
+              // parentTaskId={parentTaskId}
+            />
           </div>
         </div>
       );
