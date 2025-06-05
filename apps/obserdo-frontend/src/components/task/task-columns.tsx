@@ -12,49 +12,50 @@ import { useEditTasksBulkMutation } from "@/mutations/task";
 export const taskColumns: ColumnDef<Task>[] = [
   {
     accessorKey: "name",
-    header: ({ table }) => (
-      <>
-        <Checkbox
-          className={cn(table.getIsSomeRowsSelected() && "border-blue-500")}
-          checked={table.getIsAllRowsSelected()}
-          onClick={table.getToggleAllRowsSelectedHandler()}
-        />
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={table.getToggleAllRowsExpandedHandler()}
-          aria-label={
-            table.getIsAllRowsExpanded() ? "Collapse row" : "Expand row"
-          }
-        >
-          {table.getIsAllRowsExpanded() ? (
-            <ChevronDown className="h-4 w-4" />
-          ) : (
-            <ChevronRight className="h-4 w-4" />
-          )}
-        </Button>
-        Name
-      </>
-    ),
-    cell: ({ row, getValue, table }) => {
-      const mutation = useEditTasksBulkMutation(row.original.todoListId);
-      const selectedRows = table.getState().rowSelection;
+    header: ({ table }) => {
+      const rowsToEdit = table.getRowModel().flatRows;
 
-      if (Object.keys(selectedRows).length > 0) {
-        const selectedRows = table.getSelectedRowModel().flatRows.map((r) => ({
-          id: r.original.id,
-          name: r.original.name,
-          completed: r.original.completed,
-          parentTaskId: r.original.parentTaskId,
-        }));
-        mutation.mutate(selectedRows);
-        //         name: string;
-        // id?: string | undefined;
-        // createdAt?: Date | undefined;
-        // updatedAt?: Date | undefined;
-        // parentTaskId?: string | null | undefined;
-        // completed?: boolean | undefined;
-      }
+      const mutation = useEditTasksBulkMutation(
+        rowsToEdit[0]?.original.todoListId
+      );
+
+      return (
+        <>
+          <Checkbox
+            className={cn(table.getIsSomeRowsSelected() && "border-blue-500")}
+            checked={table.getIsAllRowsSelected()}
+            onClick={table.getToggleAllRowsSelectedHandler()}
+            onCheckedChange={(checked) => {
+              const edits = rowsToEdit.map((r) => ({
+                id: r.original.id,
+                name: r.original.name,
+                completed: !!checked,
+                parentTaskId: r.original.parentTaskId,
+              }));
+
+              mutation.mutate(edits);
+            }}
+          />
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={table.getToggleAllRowsExpandedHandler()}
+            aria-label={
+              table.getIsAllRowsExpanded() ? "Collapse row" : "Expand row"
+            }
+          >
+            {table.getIsAllRowsExpanded() ? (
+              <ChevronDown className="h-4 w-4" />
+            ) : (
+              <ChevronRight className="h-4 w-4" />
+            )}
+          </Button>
+          Name
+        </>
+      );
+    },
+    cell: ({ row, getValue }) => {
+      const mutation = useEditTasksBulkMutation(row.original.todoListId);
 
       return (
         <div
@@ -69,22 +70,22 @@ export const taskColumns: ColumnDef<Task>[] = [
           <div>
             <Checkbox
               className={cn(
-                row.subRows.length > 0 &&
-                  row.getIsSomeSelected() &&
-                  !row.getIsAllSubRowsSelected() &&
+                !row.original.completed &&
+                  row.getLeafRows().some((r) => r.original.completed) &&
                   "border-blue-500"
               )}
-              checked={
-                row.getIsSomeSelected()
-                  ? false
-                  : row.subRows.length
-                  ? row.getIsAllSubRowsSelected()
-                  : row.getIsSelected()
-              }
-              onCheckedChange={row.getToggleSelectedHandler()}
-              onClick={() =>
-                console.log("click", table.getState().rowSelection)
-              }
+              checked={row.original.completed}
+              onCheckedChange={(checked) => {
+                const rowsToEdit = [row, ...row.getLeafRows()];
+                const edits = rowsToEdit.map((r) => ({
+                  id: r.original.id,
+                  name: r.original.name,
+                  completed: !!checked,
+                  parentTaskId: r.original.parentTaskId,
+                }));
+
+                mutation.mutate(edits);
+              }}
             />
             {row.getCanExpand() && (
               <Button

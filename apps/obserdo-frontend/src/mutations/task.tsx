@@ -159,56 +159,34 @@ export const useEditTasksBulkMutation = (todoListId?: string) =>
         todoListId,
       ]);
 
-      const editsMap = new Map<string, BulkEditTask>(
-        edits.map((edit) => [edit.id!, edit])
-      );
-
-      const updateTasksById = (
-        tasks: Task[],
-        editsMap: Map<string, BulkEditTask>
-      ): Task[] => {
-        return tasks.map((task) => {
-          const edit = editsMap.get(task.id);
-          let updatedTask = task;
+      const updateTasks = (tasks: Task[]): Task[] =>
+        tasks.map((task) => {
+          const edit = edits.find((e) => e.id === task.id);
+          let updated = { ...task };
 
           if (edit) {
-            updatedTask = {
-              ...task,
-              completed:
-                typeof edit.completed === "boolean"
-                  ? edit.completed
-                  : task.completed,
+            updated = {
+              ...updated,
+              completed: edit.completed ?? task.completed,
               name: edit.name ?? task.name,
               updatedAt: new Date().toISOString(),
             };
           }
 
-          if (updatedTask.children?.length) {
-            const updatedChildren = updateTasksById(
-              updatedTask.children,
-              editsMap
-            );
-
-            if (updatedChildren !== updatedTask.children) {
-              updatedTask = { ...updatedTask, children: updatedChildren };
-            }
+          if (task.children?.length) {
+            updated.children = updateTasks(task.children);
           }
 
-          return updatedTask;
+          return updated;
         });
-      };
 
-      queryClient.setQueryData(
-        ["todo", todoListId],
-        (old: TodoWithTasks | undefined) => {
-          if (!old) return old;
-
-          return {
-            ...old,
-            tasks: updateTasksById(old.tasks, editsMap),
-          };
-        }
-      );
+      queryClient.setQueryData<TodoWithTasks>(["todo", todoListId], (old) => {
+        if (!old) return old;
+        return {
+          ...old,
+          tasks: updateTasks(old.tasks),
+        };
+      });
 
       return { previousTodo };
     },
@@ -218,7 +196,6 @@ export const useEditTasksBulkMutation = (todoListId?: string) =>
         queryClient.setQueryData(["todo", todoListId], context.previousTodo);
       }
     },
-
     onSettled: () => {
       queryClient.invalidateQueries({ queryKey: ["todo", todoListId] });
     },
