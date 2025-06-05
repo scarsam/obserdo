@@ -121,33 +121,6 @@ export const todosApp = new Hono<{
 
     return c.json(createdTask[0]);
   })
-  .put("/:id/tasks/:taskId", zValidator("json", tasksZodSchema), async (c) => {
-    const user = c.get("user");
-
-    if (!user) return c.json({ error: "Unauthorized" }, 401);
-
-    const { id, taskId } = c.req.param();
-
-    const { name, completed } = c.req.valid("json");
-
-    // First, optionally verify that todo belongs to this user
-    const todo = await db.query.todos.findFirst({
-      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
-    });
-
-    if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
-
-    // Update the task
-    const updatedTask = await db
-      .update(tasksSchema)
-      .set({ name, completed, updatedAt: new Date() })
-      .where(
-        and(eq(tasksSchema.id, taskId), eq(tasksSchema.todoListId, todo.id))
-      )
-      .returning();
-
-    return c.json(updatedTask[0]);
-  })
   .put(
     "/:id/tasks/bulk-edit",
     zValidator("json", tasksZodSchema.array()),
@@ -196,6 +169,34 @@ export const todosApp = new Hono<{
       return c.json(updatedTasks);
     }
   )
+  .put("/:id/tasks/:taskId", zValidator("json", tasksZodSchema), async (c) => {
+    const user = c.get("user");
+
+    if (!user) return c.json({ error: "Unauthorized" }, 401);
+
+    const { id, taskId } = c.req.param();
+
+    const { name, completed } = c.req.valid("json");
+
+    // First, optionally verify that todo belongs to this user
+    const todo = await db.query.todos.findFirst({
+      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
+    });
+
+    if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
+
+    // Update the task
+    const updatedTask = await db
+      .update(tasksSchema)
+      .set({ name, completed, updatedAt: new Date() })
+      .where(
+        and(eq(tasksSchema.id, taskId), eq(tasksSchema.todoListId, todo.id))
+      )
+      .returning();
+
+    return c.json(updatedTask[0]);
+  })
+
   .delete("/:id/tasks/:taskId", async (c) => {
     const user = c.get("user");
 

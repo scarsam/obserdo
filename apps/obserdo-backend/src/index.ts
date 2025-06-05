@@ -13,7 +13,7 @@ const app = new Hono<{
 }>()
   .use("*", corsMiddleware)
   .use("*", authMiddleware)
-  .on(["POST", "GET"], "/api/auth/**", (c) => auth.handler(c.req.raw))
+  .on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
   .route("/api/todos", todosApp);
 
 export type AppType = typeof app;
