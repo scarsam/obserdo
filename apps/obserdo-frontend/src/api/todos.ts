@@ -92,6 +92,7 @@ export async function editTodo(newTask: EditTodo) {
       name: newTask.name,
       description: newTask.description,
       status: newTask.status,
+      collaboratorPermission: newTask.collaboratorPermission,
     },
   });
 

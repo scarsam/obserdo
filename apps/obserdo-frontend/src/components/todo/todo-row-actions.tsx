@@ -1,23 +1,29 @@
-import { Archive } from "lucide-react";
+import { Archive, Link } from "lucide-react";
 
 import { Button } from "../ui/button";
-import { EditTodoDialog } from "./edit-todo-dialog";
 import type { Todo } from "@/api/todos";
-import { editTodoMutation } from "@/mutations/todo";
+import { useEditTodoMutation } from "@/mutations/todo";
+import { Dialog } from "../dialog";
+import { TodoEditForm } from "./todo-edit-form";
+import type { Row } from "@tanstack/react-table";
+import { TodoShareForm } from "./todo-share-form";
 
-export function TodoRowActions({ todo }: { todo: Todo }) {
-  const mutation = editTodoMutation();
+export function TodoRowActions({ row }: { row: Row<Todo> }) {
+  const mutation = useEditTodoMutation();
 
   return (
     <div className="flex">
-      <EditTodoDialog todo={todo} />
+      <Dialog dialogType="editWithIcon" dialogTitle={`Edit TODO-${row.index + 1}`} dialogDescription="Edit the todo item and save to update.">
+        <TodoEditForm row={row} />
+      </Dialog>
       <Button
         variant="ghost"
+        size="lg"
         onClick={() => {
           mutation.mutate({
-            id: `${todo.id}`,
-            name: todo.name,
-            description: todo.description,
+            id: row.original.id,
+            name: row.original.name,
+            description: row.original.description,
             status: "archived",
           });
         }}
@@ -25,6 +31,9 @@ export function TodoRowActions({ todo }: { todo: Todo }) {
         <Archive />
         <span className="sr-only">Archive</span>
       </Button>
+      <Dialog dialogType="share" dialogTitle="Share todo" dialogDescription="Share and collaborate with others on this todo">
+        <TodoShareForm row={row} />
+      </Dialog>
     </div>
   );
 }

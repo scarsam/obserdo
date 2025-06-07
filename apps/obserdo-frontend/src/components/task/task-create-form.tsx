@@ -4,27 +4,23 @@ import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
 import { useCreateTaskMutation } from "@/mutations/task";
-import type { Table } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
 import type { Task } from "@/api/todos";
 
 const taskSchema = z.object({
   name: z.string().min(1, "Title is required"),
 });
 
-export const CreateTaskForm = ({
-  table,
-  parentTaskId,
-  todoListId,
-  onSuccess,
-  onCancel,
-}: {
-  table?: Table<Task>;
-  parentTaskId?: string;
-  todoListId: string;
-  onSuccess?: () => void;
-  onCancel?: () => void;
-}) => {
-  const mutation = useCreateTaskMutation(todoListId);
+type TaskCreateFormProps =
+  | { todoId: string; row?: never; handleClose?: () => void }
+  | { todoId?: never; row: Row<Task>; handleClose?: () => void };
+
+export const TaskCreateForm = ({
+  todoId,
+  row,
+  handleClose,
+}: TaskCreateFormProps) => {
+  const mutation = useCreateTaskMutation(row?.original.todoListId ?? todoId!);
 
   const form = useForm({
     defaultValues: {
@@ -36,20 +32,17 @@ export const CreateTaskForm = ({
     },
     onSubmit: ({ value }) => {
       mutation.mutate({
-        id: `${todoListId}`,
+        id: todoId ?? row!.original.todoListId,
         name: value.name,
-        parentTaskId: parentTaskId ? parentTaskId : undefined,
+        parentTaskId: row?.original.id,
       });
 
-      if (parentTaskId) {
-        const parentRow = table?.getRow(parentTaskId);
-        if (parentRow && parentRow.getCanExpand()) {
-          parentRow.toggleExpanded(true);
-        }
+      if (row?.getCanExpand()) {
+        row.toggleExpanded(true);
       }
 
       form.reset();
-      onSuccess?.();
+      handleClose?.();
     },
   });
 
@@ -68,7 +61,7 @@ export const CreateTaskForm = ({
             return (
               <>
                 <Label className="flex-col items-start mt-3" htmlFor="name">
-                  {parentTaskId ? "New Sub-task" : "New Task"}
+                  Name
                   <Input
                     id={field.name}
                     name={field.name}
@@ -88,19 +81,19 @@ export const CreateTaskForm = ({
             <Button type="submit" disabled={!canSubmit} className="w-full mt-4">
               {isSubmitting
                 ? "..."
-                : parentTaskId
-                ? "Add Sub-task"
-                : "Add Task"}
+                : row?.original.id
+                  ? "Add Sub-task"
+                  : "Add Task"}
             </Button>
           )}
         />
 
-        {onCancel && (
+        {handleClose && (
           <Button
             variant="ghost"
             className="w-full mt-2"
             type="button"
-            onClick={() => onCancel()}
+            onClick={handleClose}
           >
             Cancel
           </Button>

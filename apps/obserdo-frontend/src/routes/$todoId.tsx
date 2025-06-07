@@ -4,7 +4,9 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { anonymousAuthQueryOptions } from "@/lib/auth";
 import { DataTable } from "@/components/table/data-table";
 import { taskColumns } from "@/components/task/task-columns";
-import { CreateTaskDialog } from "@/components/task/create-task-dialog";
+import { TaskDialog } from "@/components/task/task-dialog";
+import { TaskCreateForm } from "@/components/task/task-create-form";
+import { Badge } from "@/components/ui/badge";
 
 export const Route = createFileRoute("/$todoId")({
   loader: async ({ context, params: { todoId } }) => {
@@ -22,19 +24,28 @@ function App() {
 
   return (
     <>
-      <h1 className="text-3xl font-bold mb-6 text-center text-white">
-        {todo.name}
-      </h1>
+      <section className="flex justify-between gap-4 my-12 items-center border-b border-gray-200 pb-4">
+        <div className="flex flex-col gap-2 ">
+          <h1 className="text-xl font-bold">
+            {todo.name}
+          </h1>
+          {todo.description && (
+            <p className="text-gray-400 mt-1">{todo.description}</p>
+          )}
+        </div>
+        <Badge variant="outline">{todo.status}</Badge>
+      </section>
 
-      <li key={todo.id}>
-        <p className="font-semibold">{todo.status}</p>
-        <p className="font-semibold">{todo.name}</p>
-        {todo.description && (
-          <p className="text-gray-400 mt-1">{todo.description}</p>
-        )}
-      </li>
+
       <DataTable data={todo.tasks} columns={taskColumns}>
-        <CreateTaskDialog todoListId={todo.id} />
+        <TaskDialog
+          dialogType="create"
+          openText="Create New Task"
+          dialogTitle="Create New Task"
+          dialogDescription="Fill in the fields and save to add a new task."
+        >
+          <TaskCreateForm todoId={todo.id} />
+        </TaskDialog>
       </DataTable>
     </>
   );

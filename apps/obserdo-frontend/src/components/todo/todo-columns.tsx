@@ -43,7 +43,7 @@ export const todoColumns: ColumnDef<Todo>[] = [
           params={{ todoId: `${id}` }}
           className="hover:underline text-blue-600 font-medium"
         >
-          <>TODO-{row.getValue("id")}</>
+          <>TODO-{row.index + 1}</>
         </Link>
       );
     },
@@ -143,6 +143,6 @@ export const todoColumns: ColumnDef<Todo>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Actions" />
     ),
-    cell: ({ row }) => <TodoRowActions todo={row.original} />,
+    cell: ({ row }) => <TodoRowActions row={row} />,
   },
 ];

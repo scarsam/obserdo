@@ -3,26 +3,20 @@ import { z } from "zod/v4";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useMutation } from "@tanstack/react-query";
-import { createTodo } from "@/api/todos";
-import { queryClient } from "@/lib/react-query";
+import { useCreateTodoMutation } from "@/mutations/todo";
 
 const todoSchema = z.object({
   name: z.string().min(1, "Name is required"),
   description: z.string(),
 });
 
-export const CreateTodoForm = ({
-  onSuccess,
-  onCancel,
+export const TodoCreateForm = ({
+  handleClose
 }: {
-  onSuccess?: () => void;
-  onCancel?: () => void;
+  handleClose?: () => void;
 }) => {
-  const mutation = useMutation({
-    mutationFn: createTodo,
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["todos"] }),
-  });
+
+  const mutation = useCreateTodoMutation();
 
   const form = useForm({
     defaultValues: {
@@ -36,7 +30,7 @@ export const CreateTodoForm = ({
     onSubmit: ({ value }) => {
       mutation.mutate({ name: value.name, description: value.description });
       form.reset();
-      onSuccess?.();
+      handleClose?.();
     },
   });
 
@@ -54,7 +48,7 @@ export const CreateTodoForm = ({
           children={(field) => {
             return (
               <>
-                <Label className="flex-col items-start mt-3" htmlFor="name">
+                <Label className="flex-col items-start mt-3">
                   New todo
                   <Input
                     id={field.name}
@@ -76,7 +70,6 @@ export const CreateTodoForm = ({
               <>
                 <Label
                   className="flex-col items-start mt-3"
-                  htmlFor="description"
                 >
                   Description (optional)
                   <Input
@@ -100,12 +93,12 @@ export const CreateTodoForm = ({
           )}
         />
 
-        {onCancel && (
+        {handleClose && (
           <Button
             variant="ghost"
             className="w-full mt-2"
             type="button"
-            onClick={() => onCancel()}
+            onClick={handleClose}
           >
             Cancel
           </Button>

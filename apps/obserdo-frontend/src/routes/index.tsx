@@ -4,7 +4,8 @@ import { useSuspenseQuery } from "@tanstack/react-query";
 import { anonymousAuthQueryOptions } from "@/lib/auth";
 import { DataTable } from "@/components/table/data-table";
 import { todoColumns } from "@/components/todo/todo-columns";
-import { CreateTodoDialog } from "@/components/todo/create-todo-dialog";
+import { TodoCreateForm } from "@/components/todo/todo-create-form";
+import { Dialog } from "@/components/dialog";
 
 export const Route = createFileRoute("/")({
   loader: async ({ context }) => {
@@ -25,7 +26,9 @@ function App() {
         My Todos
       </h1>
       <DataTable data={todos} columns={todoColumns}>
-        <CreateTodoDialog />
+        <Dialog dialogType="create" dialogTitle="Create New Todo" dialogDescription="Fill in the fields and save to add a new todo.">
+          <TodoCreateForm />
+        </Dialog>
       </DataTable>
     </>
   );

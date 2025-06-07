@@ -1,41 +1,41 @@
 import { Trash2 } from "lucide-react";
 
 import { Button } from "../ui/button";
-import { CreateTaskDialog } from "./create-task-dialog";
 import { useDeleteTaskMutation } from "@/mutations/task";
 import type { Task } from "@/api/todos";
-import type { Table } from "@tanstack/react-table";
+import type { Row } from "@tanstack/react-table";
+import { TaskDialog } from "./task-dialog";
+import { TaskCreateForm } from "./task-create-form";
 
 export function TaskRowActions({
-  table,
-  todoListId,
-  parentTaskId,
+  row,
 }: {
-  table: Table<Task>;
-  todoListId: string;
-  parentTaskId?: string;
+  row: Row<Task>;
 }) {
-  const mutation = useDeleteTaskMutation(todoListId);
+  const mutation = useDeleteTaskMutation(row.original.todoListId);
 
   return (
     <div className="flex">
-      <CreateTaskDialog
-        table={table}
-        todoListId={todoListId}
-        parentTaskId={parentTaskId}
-      />
+      <TaskDialog
+        dialogType="subTask"
+        dialogTitle="Create New Sub-task"
+        dialogDescription="Fill in the fields and save to add a new sub-task."
+      >
+        <TaskCreateForm row={row} />
+      </TaskDialog>
+
       <Button
         variant="ghost"
         onClick={() => {
           mutation.mutate({
-            id: `${todoListId}`,
-            taskId: `${parentTaskId}`,
+            id: row.original.todoListId,
+            taskId: row?.original.id
           });
         }}
       >
         <Trash2 />
         <span className="sr-only">Delete</span>
       </Button>
-    </div>
+    </div >
   );
 }

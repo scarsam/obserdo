@@ -88,7 +88,6 @@ export function useCreateTaskMutation(todoId: string) {
     },
   });
 }
-
 export const useEditTaskMutation = (todoListId?: string) =>
   useMutation({
     mutationFn: editTask,
@@ -125,7 +124,8 @@ export const useEditTaskMutation = (todoListId?: string) =>
           ...old,
           tasks: updateTaskById(old.tasks, newTask.taskId, (task) => ({
             ...task,
-            completed: !!newTask.completed,
+            name: newTask.name ?? task.name,
+            completed: newTask.completed ?? task.completed,
             updatedAt: new Date().toISOString(),
           })),
         };

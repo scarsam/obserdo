@@ -9,12 +9,15 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 
-import { useState } from "react";
-import { EditTodoForm } from "./edit-todo-form";
+import { cloneElement, useState, type PropsWithChildren } from "react";
 import { Pencil } from "lucide-react";
 import type { Todo } from "@/api/todos";
 
-export function EditTodoDialog({ todo }: { todo: Todo }) {
+type DialogChildProps = {
+  handleClose?: () => void;
+};
+
+export function EditTodoDialog({ todo, children }: PropsWithChildren<{ todo: Todo }>) {
   const [open, setOpen] = useState(false);
 
   return (
@@ -32,12 +35,7 @@ export function EditTodoDialog({ todo }: { todo: Todo }) {
           </DialogDescription>
         </DialogHeader>
 
-        <EditTodoForm
-          todo={todo}
-          onSuccess={() => setOpen(false)}
-          onCancel={() => setOpen(false)}
-        />
-
+        {cloneElement(children as React.ReactElement<DialogChildProps>, { handleClose: () => setOpen(false) })}
         <DialogClose className="absolute right-4 top-4" />
       </DialogContent>
     </Dialog>

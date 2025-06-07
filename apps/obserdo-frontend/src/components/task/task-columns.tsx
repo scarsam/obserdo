@@ -8,7 +8,8 @@ import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
 import { useEditTasksBulkMutation } from "@/mutations/task";
-import { EditTaskDialog } from "./edit-task-dialog";
+import { TaskEditForm } from "./task-edit-form";
+import { Dialog } from "../dialog";
 
 export const taskColumns: ColumnDef<Task>[] = [
   {
@@ -72,8 +73,8 @@ export const taskColumns: ColumnDef<Task>[] = [
             <Checkbox
               className={cn(
                 !row.original.completed &&
-                  row.getLeafRows().some((r) => r.original.completed) &&
-                  "border-blue-500"
+                row.getLeafRows().some((r) => r.original.completed) &&
+                "border-blue-500"
               )}
               checked={row.original.completed}
               onCheckedChange={(checked) => {
@@ -102,13 +103,15 @@ export const taskColumns: ColumnDef<Task>[] = [
                 )}
               </Button>
             )}
-            {/* {getValue<boolean>()} */}
-            <EditTaskDialog
-              text={getValue<string>()}
-              table={table}
-              todoListId={"1"}
-              // parentTaskId={parentTaskId}
-            />
+            <Dialog
+              dialogType="edit"
+              openText={getValue<string>()}
+              dialogTitle="Edit Task"
+              dialogDescription="Edit the task and save to update."
+            >
+              <TaskEditForm row={row} />
+            </Dialog>
+
           </div>
         </div>
       );
@@ -150,12 +153,8 @@ export const taskColumns: ColumnDef<Task>[] = [
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Actions" />
     ),
-    cell: ({ row, table }) => (
-      <TaskRowActions
-        table={table}
-        todoListId={row.original.todoListId}
-        parentTaskId={row.original.id}
-      />
+    cell: ({ row }) => (
+      <TaskRowActions row={row} />
     ),
   },
 ];
