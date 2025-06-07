@@ -157,3 +157,13 @@ export async function deleteTask(deleteTask: DeleteTask) {
 
   return res.json();
 }
+
+export async function getWebSocket() {
+  const ws = await client.api.todos.ws.$ws(0);
+  console.log(ws);
+
+  if (ws.readyState !== WebSocket.OPEN)
+    throw new Error("Failed to get web socket");
+
+  return ws;
+}

@@ -39,7 +39,7 @@ export const todosApp = new Hono<{
 
     // First, optionally verify that todo belongs to this user
     const todo = await db.query.todos.findFirst({
-      where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
+      where: eq(todosSchema.id, id),
       with: {
         tasks: {
           orderBy: [asc(tasksSchema.createdAt)],

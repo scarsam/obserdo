@@ -1,17 +1,19 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { todoQueryOptions } from "@/api/todos";
+import { getWebSocket, todoQueryOptions } from "@/api/todos";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { anonymousAuthQueryOptions } from "@/lib/auth";
 import { DataTable } from "@/components/table/data-table";
 import { taskColumns } from "@/components/task/task-columns";
-import { TaskDialog } from "@/components/task/task-dialog";
 import { TaskCreateForm } from "@/components/task/task-create-form";
 import { Badge } from "@/components/ui/badge";
+import { Dialog } from "@/components/dialog";
+import { useEffect } from "react";
 
 export const Route = createFileRoute("/$todoId")({
   loader: async ({ context, params: { todoId } }) => {
-    await context.queryClient.ensureQueryData(anonymousAuthQueryOptions());
+    const auth = await context.queryClient.ensureQueryData(anonymousAuthQueryOptions());
     context.queryClient.ensureQueryData(todoQueryOptions(todoId));
+    return { user: auth?.user };
   },
   pendingComponent: () => <p>Loading...</p>,
   errorComponent: () => <p>Error loading todo.</p>,
@@ -19,8 +21,25 @@ export const Route = createFileRoute("/$todoId")({
 });
 
 function App() {
+  const { user } = Route.useLoaderData();
   const { todoId } = Route.useParams();
   const { data: todo } = useSuspenseQuery(todoQueryOptions(todoId));
+  user
+  const isOwner = user?.id === todo.userId;
+  const canEdit = isOwner || todo.collaboratorPermission === "write";
+
+  useEffect(() => {
+    const setupWebSocket = async () => {
+      try {
+        const ws = await getWebSocket();
+        console.log(ws);
+      } catch (error) {
+        console.error('Failed to establish WebSocket connection:', error);
+      }
+    };
+
+    setupWebSocket();
+  }, []);
 
   return (
     <>
@@ -38,14 +57,19 @@ function App() {
 
 
       <DataTable data={todo.tasks} columns={taskColumns}>
-        <TaskDialog
-          dialogType="create"
-          openText="Create New Task"
-          dialogTitle="Create New Task"
-          dialogDescription="Fill in the fields and save to add a new task."
-        >
-          <TaskCreateForm todoId={todo.id} />
-        </TaskDialog>
+        {canEdit ? (
+          <Dialog
+            dialogType="create"
+            openText="Create New Task"
+            dialogTitle="Create New Task"
+            dialogDescription="Fill in the fields and save to add a new task."
+          >
+            <TaskCreateForm todoId={todo.id} />
+          </Dialog>
+        ) : (
+          <p>You don't have permission to edit this list</p>
+        )}
+
       </DataTable>
     </>
   );

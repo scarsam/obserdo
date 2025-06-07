@@ -26,7 +26,7 @@ function App() {
         My Todos
       </h1>
       <DataTable data={todos} columns={todoColumns}>
-        <Dialog dialogType="create" dialogTitle="Create New Todo" dialogDescription="Fill in the fields and save to add a new todo.">
+        <Dialog dialogType="create" openText="Create New Todo" dialogTitle="Create New Todo" dialogDescription="Fill in the fields and save to add a new todo.">
           <TodoCreateForm />
         </Dialog>
       </DataTable>

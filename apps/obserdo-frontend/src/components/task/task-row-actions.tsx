@@ -4,7 +4,7 @@ import { Button } from "../ui/button";
 import { useDeleteTaskMutation } from "@/mutations/task";
 import type { Task } from "@/api/todos";
 import type { Row } from "@tanstack/react-table";
-import { TaskDialog } from "./task-dialog";
+import { Dialog } from "@/components/dialog";
 import { TaskCreateForm } from "./task-create-form";
 
 export function TaskRowActions({
@@ -16,13 +16,13 @@ export function TaskRowActions({
 
   return (
     <div className="flex">
-      <TaskDialog
+      <Dialog
         dialogType="subTask"
         dialogTitle="Create New Sub-task"
         dialogDescription="Fill in the fields and save to add a new sub-task."
       >
         <TaskCreateForm row={row} />
-      </TaskDialog>
+      </Dialog>
 
       <Button
         variant="ghost"
