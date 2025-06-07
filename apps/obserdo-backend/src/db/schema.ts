@@ -19,11 +19,17 @@ export const todoStatus = pgEnum("todo_status", [
   "archived",
 ]);
 
+export const collaboratorPermission = pgEnum("collaborator_permission", [
+  "read",
+  "write",
+]);
+
 export const todos = pgTable("todos", {
   id: uuid("id").primaryKey().defaultRandom(),
   name: varchar({ length: 255 }).notNull(),
-  description: varchar({ length: 255 }),
+  description: varchar({ length: 255 }).notNull(),
   status: todoStatus().default("todo").notNull(),
+  collaboratorPermission: collaboratorPermission().default("read").notNull(),
   userId: text("user_id")
     .notNull()
     .references(() => user.id, { onDelete: "cascade" }),

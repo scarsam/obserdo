@@ -60,7 +60,8 @@ export const todosApp = new Hono<{
 
     const { id } = c.req.param();
 
-    const { name, description, status } = c.req.valid("json");
+    const { name, description, status, collaboratorPermission } =
+      c.req.valid("json");
 
     const todo = await db.query.todos.findFirst({
       where: and(eq(todosSchema.id, id), eq(todosSchema.userId, user.id)),
@@ -69,7 +70,13 @@ export const todosApp = new Hono<{
     // Update the todo
     const updatedTodo = await db
       .update(todosSchema)
-      .set({ name, description, status, updatedAt: new Date() })
+      .set({
+        name,
+        description,
+        status,
+        collaboratorPermission,
+        updatedAt: new Date(),
+      })
       .where(eq(todosSchema.id, todo.id))
       .returning();
 
