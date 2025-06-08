@@ -25,10 +25,10 @@ export const Route = createFileRoute("/$todoId")({
 function App() {
 	const { user } = Route.useLoaderData();
 	const { todoId } = Route.useParams();
-	useWebsocket(todoId);
 	const { data: todo } = useSuspenseQuery(todoQueryOptions(todoId));
 	const isOwner = user?.id === todo.userId;
 	const canEdit = isOwner || todo.collaboratorPermission === "write";
+	useWebsocket(todoId);
 
 	return (
 		<>
