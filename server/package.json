@@ -1,0 +1,31 @@
+{
+  "name": "server",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "dev": "bun run --hot src/index.ts",
+    "build": "tsc",
+    "start": "node dist/src/index.js",
+    "db:studio": "drizzle-kit studio",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "lint": "eslint ."
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.3",
+    "@hono/node-ws": "^1.1.6",
+    "@hono/zod-validator": "^0.7.0",
+    "dotenv": "^16.5.0",
+    "drizzle-orm": "^0.44.0",
+    "drizzle-zod": "^0.8.2",
+    "hono": "^4.7.10",
+    "pg": "^8.16.0",
+    "shared": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/bun": "latest",
+    "@types/pg": "^8.15.2",
+    "drizzle-kit": "^0.31.1"
+  }
+}
