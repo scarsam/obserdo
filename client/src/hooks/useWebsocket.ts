@@ -1,4 +1,4 @@
-import { client } from "@/api/todos";
+import { client } from "@/api/client";
 import { queryClient } from "@/lib/react-query";
 import { useEffect, useRef } from "react";
 
