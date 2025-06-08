@@ -3,7 +3,7 @@ import { z } from "zod/v4";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useEditTaskMutation } from "@/mutations/task";
+import { useEditTaskMutation } from "@/api/tasks";
 import type { Row } from "@tanstack/react-table";
 import type { Task } from "@/api/todos";
 

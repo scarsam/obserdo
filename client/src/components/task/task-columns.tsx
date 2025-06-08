@@ -7,7 +7,7 @@ import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
 import { cn } from "@/lib/utils";
-import { useEditTasksBulkMutation } from "@/mutations/task";
+import { useBulkEditTasksMutation } from "@/api/tasks";
 import { TaskEditForm } from "./task-edit-form";
 import { Dialog } from "../dialog";
 
@@ -17,7 +17,7 @@ export const taskColumns: ColumnDef<Task>[] = [
 		header: ({ table }) => {
 			const rowsToEdit = table.getRowModel().flatRows;
 
-			const mutation = useEditTasksBulkMutation(
+			const mutation = useBulkEditTasksMutation(
 				rowsToEdit[0]?.original.todoListId,
 			);
 
@@ -57,7 +57,7 @@ export const taskColumns: ColumnDef<Task>[] = [
 			);
 		},
 		cell: ({ row, getValue }) => {
-			const mutation = useEditTasksBulkMutation(row.original.todoListId);
+			const mutation = useBulkEditTasksMutation(row.original.todoListId);
 
 			return (
 				<div

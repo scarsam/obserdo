@@ -3,7 +3,7 @@ import { z } from "zod/v4";
 import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useCreateTaskMutation } from "@/mutations/task";
+import { useCreateTaskMutation } from "@/api/tasks";
 import type { Row } from "@tanstack/react-table";
 import type { Task } from "@/api/todos";
 
@@ -20,8 +20,8 @@ export const TaskCreateForm = ({
 	row,
 	handleClose,
 }: TaskCreateFormProps) => {
-	// const ws = useWebsocket();
-	const mutation = useCreateTaskMutation(row?.original.todoListId ?? todoId!);
+	const id = row ? row.original.todoListId : todoId;
+	const mutation = useCreateTaskMutation(id);
 
 	const form = useForm({
 		defaultValues: {
