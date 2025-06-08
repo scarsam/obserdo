@@ -2,9 +2,10 @@ import { Hono } from "hono";
 import { auth } from "./lib/auth.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { authMiddleware } from "./middleware/auth.js";
-import { todosApp } from "./routes/todos.js";
+import { todoRouter } from "./routes/todo/index.js";
 import { createBunWebSocket } from "hono/bun";
 import type { ServerWebSocket } from "bun";
+import { logger } from "hono/logger";
 
 const { websocket, upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
 
@@ -22,10 +23,12 @@ export const server = Bun.serve({
 });
 
 const routes = app
+	.use("*", logger())
 	.use("*", corsMiddleware)
 	.use("*", authMiddleware)
 	.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
-	.route("/api/todos", todosApp)
+	.route("/api/todos", todoRouter)
+	.get("/health", (c) => c.json({ status: "ok" }))
 	.get(
 		"/ws",
 		upgradeWebSocket((c) => {
