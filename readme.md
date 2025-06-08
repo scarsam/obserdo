@@ -13,7 +13,7 @@ best user experience and a combination of user stories that - in your opinion - 
 showcase your capabilities in the time you have available.
 
 - [x] ⚠️(required): I as a user can create to-do items, such as a grocery list.
-- [-] ⚠️(required): I as another user can collaborate in real-time with user - so that we can
+- [x] ⚠️(required): I as another user can collaborate in real-time with user - so that we can
   (for example) edit our family shopping list together.
 - [x] I as a user can mark to-do items as “done” - so that I can avoid clutter and focus on
       things that are still pending.
@@ -27,7 +27,7 @@ showcase your capabilities in the time you have available.
   task called “Salad”, where I'd add all ingredients as sub-tasks, and would see how much
   a salad costs on my shopping list.
 - [x] I as a user can make infinite nested levels of subtasks.
-- [?] I as a user can add sub-descriptions of tasks in Markdown and view them as rich text
+- [ ] I as a user can add sub-descriptions of tasks in Markdown and view them as rich text
   while I'm not editing the descriptions.
 - [-] I as a user can see the cursor and/or selection of another-user as he selects/types when
   he is editing text - so that we can discuss focused words during our online call.
