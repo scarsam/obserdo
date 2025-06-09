@@ -7,7 +7,18 @@
 	},
 	"files": {
 		"ignoreUnknown": false,
-		"ignore": []
+		"ignore": [
+			"node_modules",
+			"dist",
+			"build",
+			"public",
+			"public/build",
+			"**/*/tsconfig.node.json",
+			"**/*/tsconfig.json",
+			"**/*/tsconfig.app.json",
+			"client/src/components/ui",
+			"client/src/routeTree.gen.ts"
+		]
 	},
 	"formatter": {
 		"enabled": true,
@@ -21,8 +32,8 @@
 		"rules": {
 			"recommended": true,
 			"correctness": {
-        "noChildrenProp": "off"
-      }
+				"noChildrenProp": "off"
+			}
 		}
 	},
 	"javascript": {

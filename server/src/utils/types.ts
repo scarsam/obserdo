@@ -1,9 +1,9 @@
-import { Hono } from "hono";
-import type { auth } from "../lib/auth.js";
-import { z } from "zod";
-import { todos, tasks } from "../db/schema.js";
-import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { zValidator } from "@hono/zod-validator";
+import { createInsertSchema, createSelectSchema } from "drizzle-zod";
+import { Hono } from "hono";
+import { z } from "zod";
+import { tasks, todos } from "../db/schema.js";
+import type { auth } from "../lib/auth.js";
 
 // Context type for the router
 export type TodoContext = {

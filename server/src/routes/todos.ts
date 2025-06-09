@@ -1,10 +1,11 @@
 import { zValidator } from "@hono/zod-validator";
-import { db } from "../db/index.js";
-import { and, asc, eq } from "drizzle-orm";
-import { todos as todosSchema, tasks as tasksSchema } from "../db/schema.js";
-import { todosInsertSchema, type TodoContext } from "../utils/types.js";
-import { Hono } from "hono";
+import { server } from "@server/index.js";
 import { buildTaskTree } from "@server/utils/task-tree-builder.js";
+import { and, asc, eq } from "drizzle-orm";
+import { Hono } from "hono";
+import { db } from "../db/index.js";
+import { tasks as tasksSchema, todos as todosSchema } from "../db/schema.js";
+import { type TodoContext, todosInsertSchema } from "../utils/types.js";
 
 // GET / - List all todos
 const app = new Hono<TodoContext>()
@@ -61,6 +62,7 @@ const app = new Hono<TodoContext>()
 	})
 	.put("/:id", zValidator("json", todosInsertSchema), async (c) => {
 		const user = c.get("user");
+
 		if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 		const { id } = c.req.param();
@@ -84,6 +86,14 @@ const app = new Hono<TodoContext>()
 			})
 			.where(eq(todosSchema.id, todo.id))
 			.returning();
+
+		server.publish(
+			`todo-${todo.id}`,
+			JSON.stringify({
+				type: "todo_updated",
+				data: updatedTodo[0],
+			}),
+		);
 
 		return c.json(updatedTodo[0]);
 	})

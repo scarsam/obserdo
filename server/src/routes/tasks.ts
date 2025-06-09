@@ -1,15 +1,15 @@
 import { zValidator } from "@hono/zod-validator";
+import { and, eq, or } from "drizzle-orm";
+import { Hono } from "hono";
 import { db } from "../db/index.js";
-import { and, eq } from "drizzle-orm";
 import { tasks as tasksSchema, todos as todosSchema } from "../db/schema.js";
-import {
-	todoRouter,
-	tasksInsertSchema,
-	type TodoContext,
-} from "../utils/types.js";
 // import { buildTaskTree } from "../../utils/task-tree-builder.js";
 import { server } from "../index.js";
-import { Hono } from "hono";
+import {
+	type TodoContext,
+	tasksInsertSchema,
+	todoRouter,
+} from "../utils/types.js";
 
 const app = new Hono<TodoContext>()
 	.post("/:todoId/tasks", zValidator("json", tasksInsertSchema), async (c) => {
@@ -21,7 +21,13 @@ const app = new Hono<TodoContext>()
 		const { name, parentTaskId, completed } = c.req.valid("json");
 
 		const todo = await db.query.todos.findFirst({
-			where: and(eq(todosSchema.id, todoId), eq(todosSchema.userId, user.id)),
+			where: and(
+				eq(todosSchema.id, todoId),
+				or(
+					eq(todosSchema.collaboratorPermission, "write"),
+					eq(todosSchema.userId, user.id),
+				),
+			),
 		});
 
 		if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
@@ -63,7 +69,13 @@ const app = new Hono<TodoContext>()
 			const edits = c.req.valid("json");
 
 			const todo = await db.query.todos.findFirst({
-				where: and(eq(todosSchema.id, todoId), eq(todosSchema.userId, user.id)),
+				where: and(
+					eq(todosSchema.id, todoId),
+					or(
+						eq(todosSchema.collaboratorPermission, "write"),
+						eq(todosSchema.userId, user.id),
+					),
+				),
 			});
 
 			if (!todo)
@@ -89,6 +101,34 @@ const app = new Hono<TodoContext>()
 						.returning();
 					if (updated.length > 0) updates.push(updated[0]);
 				}
+
+				const allTasks = await tx
+					.select({ completed: tasksSchema.completed })
+					.from(tasksSchema)
+					.where(eq(tasksSchema.todoListId, todoId));
+
+				const allDone = allTasks.every((t) => t.completed === true);
+
+				if (allDone) {
+					await tx
+						.update(todosSchema)
+						.set({
+							status: "done",
+							updatedAt: new Date(),
+						})
+						.where(eq(todosSchema.id, todoId));
+				}
+
+				if (allTasks.length > 0 && !allDone) {
+					await tx
+						.update(todosSchema)
+						.set({
+							status: "in-progress",
+							updatedAt: new Date(),
+						})
+						.where(eq(todosSchema.id, todoId));
+				}
+
 				return updates;
 			});
 
@@ -108,13 +148,20 @@ const app = new Hono<TodoContext>()
 		zValidator("json", tasksInsertSchema),
 		async (c) => {
 			const user = c.get("user");
+
 			if (!user) return c.json({ error: "Unauthorized" }, 401);
 
 			const { todoId, taskId } = c.req.param();
 			const { name, completed } = c.req.valid("json");
 
 			const todo = await db.query.todos.findFirst({
-				where: and(eq(todosSchema.id, todoId), eq(todosSchema.userId, user.id)),
+				where: and(
+					eq(todosSchema.id, todoId),
+					or(
+						eq(todosSchema.collaboratorPermission, "write"),
+						eq(todosSchema.userId, user.id),
+					),
+				),
 			});
 
 			if (!todo)
@@ -146,7 +193,13 @@ const app = new Hono<TodoContext>()
 		const { todoId, taskId } = c.req.param();
 
 		const todo = await db.query.todos.findFirst({
-			where: and(eq(todosSchema.id, todoId), eq(todosSchema.userId, user.id)),
+			where: and(
+				eq(todosSchema.id, todoId),
+				or(
+					eq(todosSchema.collaboratorPermission, "write"),
+					eq(todosSchema.userId, user.id),
+				),
+			),
 		});
 
 		if (!todo) return c.json({ error: "Todo not found or unauthorized" }, 404);
@@ -157,6 +210,18 @@ const app = new Hono<TodoContext>()
 				and(eq(tasksSchema.id, taskId), eq(tasksSchema.todoListId, todo.id)),
 			)
 			.returning();
+
+		const allTasks = await db
+			.select({ completed: tasksSchema.completed })
+			.from(tasksSchema)
+			.where(eq(tasksSchema.todoListId, todoId));
+
+		if (allTasks.length === 0) {
+			await db
+				.update(todosSchema)
+				.set({ status: "todo", updatedAt: new Date() })
+				.where(eq(todosSchema.id, todoId));
+		}
 
 		server.publish(
 			`todo-${todo.id}`,

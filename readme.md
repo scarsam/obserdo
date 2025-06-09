@@ -46,7 +46,7 @@ showcase your capabilities in the time you have available.
   expect it to sync up with BE as I regain connection
 - [] I as a user can use my VR goggles to edit/browse multiple to-do lists in parallel in 3D
   space so that I can feel ultra-productive
-- [-] I as a user can change the order of tasks via drag & drop
+- [] I as a user can change the order of tasks via drag & drop
 - [] I as a user can move/convert subtasks to tasks via drag & drop
 - [x] I as a user can be sure that my todos will be persisted so that important information is
       not lost when server restarts

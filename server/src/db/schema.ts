@@ -1,13 +1,13 @@
 import { relations } from "drizzle-orm";
 import {
+	type AnyPgColumn,
+	boolean,
+	pgEnum,
 	pgTable,
 	text,
 	timestamp,
-	boolean,
-	varchar,
-	pgEnum,
-	type AnyPgColumn,
 	uuid,
+	varchar,
 } from "drizzle-orm/pg-core";
 
 export const todoStatus = pgEnum("todo_status", [

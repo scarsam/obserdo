@@ -1,12 +1,12 @@
-import { Hono } from "hono";
-import { auth } from "./lib/auth.js";
-import { corsMiddleware } from "./middleware/cors.js";
-import { authMiddleware } from "./middleware/auth.js";
-import { createBunWebSocket } from "hono/bun";
 import type { ServerWebSocket } from "bun";
+import { Hono } from "hono";
+import { createBunWebSocket } from "hono/bun";
 import { logger } from "hono/logger";
-import todoRouter from "./routes/todos.js";
+import { auth } from "./lib/auth.js";
+import { authMiddleware } from "./middleware/auth.js";
+import { corsMiddleware } from "./middleware/cors.js";
 import tasksRouter from "./routes/tasks.js";
+import todoRouter from "./routes/todos.js";
 
 const { websocket, upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
 
@@ -38,6 +38,32 @@ const routes = app
 			const topic = `todo-${todoId}`;
 
 			return {
+				onMessage(event, ws) {
+					// console.log("onMessage", event);
+					// console.log("ws", ws);
+
+					const data = JSON.parse(event.data as string);
+
+					if (data.type === "cursor-update") {
+						const { userId, x, y } = data.payload as unknown as {
+							userId: string;
+							x: number;
+							y: number;
+						};
+
+						server.publish(
+							topic,
+							JSON.stringify({
+								type: "cursor-update",
+								payload: {
+									userId,
+									x,
+									y,
+								},
+							}),
+						);
+					}
+				},
 				onOpen(_, ws) {
 					const rawWs = ws.raw;
 					rawWs?.subscribe(topic);
