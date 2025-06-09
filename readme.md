@@ -29,7 +29,7 @@ showcase your capabilities in the time you have available.
 - [x] I as a user can make infinite nested levels of subtasks.
 - [ ] I as a user can add sub-descriptions of tasks in Markdown and view them as rich text
   while I'm not editing the descriptions.
-- [-] I as a user can see the cursor and/or selection of another-user as he selects/types when
+- [x] I as a user can see the cursor and/or selection of another-user as he selects/types when
   he is editing text - so that we can discuss focused words during our online call.
 - [x] I as a user can create multiple to-do lists where each list has its unique URL that I can
       share with my friends - so that I could have separate to-do lists for my groceries and

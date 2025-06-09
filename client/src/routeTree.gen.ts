@@ -10,85 +10,85 @@
 
 // Import Routes
 
-import { Route as TodoIdImport } from "./routes/$todoId";
-import { Route as rootRoute } from "./routes/__root";
-import { Route as IndexImport } from "./routes/index";
+import { Route as rootRoute } from './routes/__root'
+import { Route as TodoIdImport } from './routes/$todoId'
+import { Route as IndexImport } from './routes/index'
 
 // Create/Update Routes
 
 const TodoIdRoute = TodoIdImport.update({
-	id: "/$todoId",
-	path: "/$todoId",
-	getParentRoute: () => rootRoute,
-} as any);
+  id: '/$todoId',
+  path: '/$todoId',
+  getParentRoute: () => rootRoute,
+} as any)
 
 const IndexRoute = IndexImport.update({
-	id: "/",
-	path: "/",
-	getParentRoute: () => rootRoute,
-} as any);
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRoute,
+} as any)
 
 // Populate the FileRoutesByPath interface
 
-declare module "@tanstack/react-router" {
-	interface FileRoutesByPath {
-		"/": {
-			id: "/";
-			path: "/";
-			fullPath: "/";
-			preLoaderRoute: typeof IndexImport;
-			parentRoute: typeof rootRoute;
-		};
-		"/$todoId": {
-			id: "/$todoId";
-			path: "/$todoId";
-			fullPath: "/$todoId";
-			preLoaderRoute: typeof TodoIdImport;
-			parentRoute: typeof rootRoute;
-		};
-	}
+declare module '@tanstack/react-router' {
+  interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexImport
+      parentRoute: typeof rootRoute
+    }
+    '/$todoId': {
+      id: '/$todoId'
+      path: '/$todoId'
+      fullPath: '/$todoId'
+      preLoaderRoute: typeof TodoIdImport
+      parentRoute: typeof rootRoute
+    }
+  }
 }
 
 // Create and export the route tree
 
 export interface FileRoutesByFullPath {
-	"/": typeof IndexRoute;
-	"/$todoId": typeof TodoIdRoute;
+  '/': typeof IndexRoute
+  '/$todoId': typeof TodoIdRoute
 }
 
 export interface FileRoutesByTo {
-	"/": typeof IndexRoute;
-	"/$todoId": typeof TodoIdRoute;
+  '/': typeof IndexRoute
+  '/$todoId': typeof TodoIdRoute
 }
 
 export interface FileRoutesById {
-	__root__: typeof rootRoute;
-	"/": typeof IndexRoute;
-	"/$todoId": typeof TodoIdRoute;
+  __root__: typeof rootRoute
+  '/': typeof IndexRoute
+  '/$todoId': typeof TodoIdRoute
 }
 
 export interface FileRouteTypes {
-	fileRoutesByFullPath: FileRoutesByFullPath;
-	fullPaths: "/" | "/$todoId";
-	fileRoutesByTo: FileRoutesByTo;
-	to: "/" | "/$todoId";
-	id: "__root__" | "/" | "/$todoId";
-	fileRoutesById: FileRoutesById;
+  fileRoutesByFullPath: FileRoutesByFullPath
+  fullPaths: '/' | '/$todoId'
+  fileRoutesByTo: FileRoutesByTo
+  to: '/' | '/$todoId'
+  id: '__root__' | '/' | '/$todoId'
+  fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
-	IndexRoute: typeof IndexRoute;
-	TodoIdRoute: typeof TodoIdRoute;
+  IndexRoute: typeof IndexRoute
+  TodoIdRoute: typeof TodoIdRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
-	IndexRoute: IndexRoute,
-	TodoIdRoute: TodoIdRoute,
-};
+  IndexRoute: IndexRoute,
+  TodoIdRoute: TodoIdRoute,
+}
 
 export const routeTree = rootRoute
-	._addFileChildren(rootRouteChildren)
-	._addFileTypes<FileRouteTypes>();
+  ._addFileChildren(rootRouteChildren)
+  ._addFileTypes<FileRouteTypes>()
 
 /* ROUTE_MANIFEST_START
 {
