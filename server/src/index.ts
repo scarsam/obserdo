@@ -19,6 +19,7 @@ const app = new Hono<{
 
 export const server = Bun.serve({
 	fetch: app.fetch,
+	hostname: "0.0.0.0",
 	port: process.env.PORT ? Number.parseInt(process.env.PORT) : 3000,
 	websocket,
 });
@@ -83,5 +84,4 @@ const routes = app
 		}),
 	);
 
-export default routes;
 export type AppType = typeof routes;
