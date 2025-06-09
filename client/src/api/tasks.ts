@@ -1,13 +1,8 @@
-import { queryOptions, useMutation } from "@tanstack/react-query";
+import { queryClient } from "@/lib/react-query";
+import { useMutation } from "@tanstack/react-query";
 import type { InferRequestType } from "hono/client";
 import { client } from "./client";
-import { queryClient } from "@/lib/react-query";
-import {
-	addTaskToCache,
-	updateTaskInCache,
-	removeTaskFromCache,
-} from "@/api/optimistic-updates";
-import type { TaskWithChildren, TodoWithTasks } from "./todos";
+import type { TodoWithTasks } from "./todos";
 
 const $tasksPost = client.api.tasks[":todoId"].tasks.$post;
 const $tasksPut = client.api.tasks[":todoId"].tasks[":taskId"].edit.$put;
@@ -23,23 +18,7 @@ export type BulkUpdateTaskRequest = InferRequestType<
 	typeof $tasksBulkPut
 >["json"];
 export type DeleteTaskRequest = InferRequestType<typeof $tasksDelete>["param"];
-
-// API functions
-// export const tasksQueryOptions = (todoId: string) =>
-// 	queryOptions({
-// 		queryKey: ["tasks", todoId],
-// 		queryFn: async () => {
-// 			const res = await client.api.todos[":id"].$get({
-// 				param: { id: todoId },
-// 			});
-
-// 			if (!res.ok) throw new Error("Failed to fetch tasks");
-
-// 			const data = await res.json();
-// 			return data.tasks;
-// 		},
-// 		staleTime: 1000 * 60 * 5,
-// 	});
+export type Task = TodoWithTasks["tasks"][number];
 
 export const createTask = async ({ ...data }: CreateTaskRequest) => {
 	const res = await $tasksPost({
@@ -100,7 +79,7 @@ export const useCreateTaskMutation = (todoId: string) =>
 			]);
 			if (!previousTodo) throw new Error("No previous todo found");
 
-			const optimisticTask: TaskWithChildren = {
+			const optimisticTask = {
 				id: crypto.randomUUID(),
 				name: newTask.name,
 				completed: false,
@@ -111,9 +90,35 @@ export const useCreateTaskMutation = (todoId: string) =>
 				children: [],
 			};
 
-			const optimisticTodo = addTaskToCache(previousTodo, optimisticTask);
+			const insertTask = (
+				tasks: TodoWithTasks["tasks"],
+				parentId: string,
+			): TodoWithTasks["tasks"] => {
+				return tasks.map((task) => {
+					if (task.id === parentId) {
+						return {
+							...task,
+							children: [...task.children, optimisticTask],
+						};
+					}
+					if (task.children.length > 0) {
+						return {
+							...task,
+							children: insertTask(task.children, parentId),
+						};
+					}
+					return task;
+				});
+			};
 
-			queryClient.setQueryData(["todo", todoId], optimisticTodo);
+			const updatedTasks = optimisticTask.parentTaskId
+				? insertTask(previousTodo.tasks, optimisticTask.parentTaskId)
+				: [...previousTodo.tasks, optimisticTask];
+
+			queryClient.setQueryData<TodoWithTasks>(["todo", todoId], {
+				...previousTodo,
+				tasks: updatedTasks,
+			});
 
 			return { previousTodo };
 		},
@@ -129,12 +134,12 @@ export const useCreateTaskMutation = (todoId: string) =>
 		},
 	});
 
-export const useEditTaskMutation = (todoId?: string) =>
+export const useEditTaskMutation = (todoId: string) =>
 	useMutation({
 		mutationFn: updateTask,
 
 		onMutate: async (newTask) => {
-			if (!todoId) throw new Error("Missing todoListId");
+			if (!todoId) throw new Error("Missing todoId");
 
 			await queryClient.cancelQueries({ queryKey: ["todo", todoId] });
 
@@ -144,18 +149,37 @@ export const useEditTaskMutation = (todoId?: string) =>
 			]);
 			if (!previousTodo) throw new Error("No previous todo found");
 
-			const updatedTask: TaskWithChildren = {
-				id: newTask.taskId,
-				name: newTask.name ?? "",
-				todoListId: todoId,
-				parentTaskId: newTask.parentTaskId ?? null,
-				completed: newTask.completed ?? false,
-				createdAt: new Date().toISOString(),
-				updatedAt: new Date().toISOString(),
-				children: [],
+			const now = new Date().toISOString();
+
+			const updateTask = (
+				tasks: TodoWithTasks["tasks"],
+				id: string,
+				updater: (task: Task) => Task,
+			): TodoWithTasks["tasks"] => {
+				return tasks.map((task) => {
+					if (task.id === id) {
+						return updater(task);
+					}
+
+					const updatedChildren = updateTask(task.children ?? [], id, updater);
+					if (updatedChildren !== task.children) {
+						return { ...task, children: updatedChildren };
+					}
+
+					return task;
+				});
 			};
 
-			const optimisticTodo = updateTaskInCache(previousTodo, updatedTask);
+			const optimisticTodo = {
+				...previousTodo,
+				tasks: updateTask(previousTodo.tasks, newTask.taskId, (task) => ({
+					...task,
+					name: newTask.name ?? task.name,
+					parentTaskId: newTask.parentTaskId ?? task.parentTaskId,
+					completed: newTask.completed ?? task.completed,
+					updatedAt: now,
+				})),
+			};
 
 			queryClient.setQueryData(["todo", todoId], optimisticTodo);
 
@@ -163,111 +187,133 @@ export const useEditTaskMutation = (todoId?: string) =>
 		},
 
 		onError: (_err, _newTask, context) => {
-			if (todoId && context?.previousTodo) {
+			if (context?.previousTodo) {
 				queryClient.setQueryData(["todo", todoId], context.previousTodo);
 			}
 		},
 
 		onSettled: () => {
-			if (todoId) {
-				queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
-			}
+			queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
 		},
 	});
 
-export const useBulkEditTasksMutation = (todoListId?: string) =>
+export const useBulkEditTasksMutation = (todoId: string) =>
 	useMutation({
 		mutationFn: (edits: BulkUpdateTaskRequest) => {
-			if (!todoListId) throw new Error("Missing todoListId");
-
-			return bulkUpdateTasks({ id: todoListId, json: edits });
+			if (!todoId) throw new Error("Missing todoId");
+			return bulkUpdateTasks({ id: todoId, json: edits });
 		},
 
 		onMutate: async (edits) => {
-			if (!todoListId) throw new Error("Missing todoListId");
+			if (!todoId) throw new Error("Missing todoId");
 
-			await queryClient.cancelQueries({ queryKey: ["todo", todoListId] });
+			await queryClient.cancelQueries({ queryKey: ["todo", todoId] });
 
 			const previousTodo = queryClient.getQueryData<TodoWithTasks>([
 				"todo",
-				todoListId,
+				todoId,
 			]);
 
 			if (!previousTodo) throw new Error("No previous todo found");
 
 			const now = new Date().toISOString();
 
-			// Todo: Fix this
-			const tasksToUpdate = edits.map((edit) => {
-				const existingTask = previousTodo.tasks.find((t) => t.id === edit.id);
+			// Create a map for quick lookup of edits by id
+			const editsMap = new Map(edits.map((e) => [e.id, e]));
 
-				console.log(existingTask);
-				return {
-					id: edit.id ?? crypto.randomUUID(),
-					name: edit.name ?? "",
-					todoListId,
-					parentTaskId: edit.parentTaskId ?? existingTask?.parentTaskId ?? null,
-					completed: edit.completed ?? false,
-					createdAt: now,
-					updatedAt: now,
-					children: existingTask?.children ?? [],
-				};
-			});
+			const updateTasks = (
+				tasks: TodoWithTasks["tasks"],
+			): TodoWithTasks["tasks"] =>
+				tasks.map((task) => {
+					const edit = editsMap.get(task.id);
+					const updatedChildren = updateTasks(task.children || []);
 
-			const optimisticTodo = tasksToUpdate.reduce((todo, task) => {
-				return updateTaskInCache(todo, task);
-			}, previousTodo);
+					if (edit) {
+						return {
+							...task,
+							name: edit.name ?? task.name,
+							completed: edit.completed ?? task.completed,
+							parentTaskId: edit.parentTaskId ?? task.parentTaskId,
+							updatedAt: now,
+							children: updatedChildren,
+						};
+					}
 
-			queryClient.setQueryData(["todo", todoListId], optimisticTodo);
+					if (updatedChildren !== task.children) {
+						return { ...task, children: updatedChildren };
+					}
+
+					return task;
+				});
+
+			const optimisticTodo = {
+				...previousTodo,
+				tasks: updateTasks(previousTodo.tasks),
+			};
+
+			queryClient.setQueryData(["todo", todoId], optimisticTodo);
 
 			return { previousTodo };
 		},
 
 		onError: (_err, _edits, context) => {
 			if (context?.previousTodo) {
-				queryClient.setQueryData(["todo", todoListId], context.previousTodo);
+				queryClient.setQueryData(["todo", todoId], context.previousTodo);
 			}
 		},
 
 		onSettled: () => {
-			if (todoListId) {
-				queryClient.invalidateQueries({ queryKey: ["todo", todoListId] });
-			}
+			queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+			queryClient.invalidateQueries({ queryKey: ["todos"] });
 		},
 	});
 
-export const useDeleteTaskMutation = (todoListId?: string) =>
+export const useDeleteTaskMutation = (todoId: string) =>
 	useMutation({
 		mutationFn: deleteTask,
 
 		onMutate: async (deleted) => {
-			if (!todoListId) throw new Error("Missing todoListId");
+			if (!todoId) throw new Error("Missing todoId");
 
-			await queryClient.cancelQueries({ queryKey: ["todo", todoListId] });
+			await queryClient.cancelQueries({ queryKey: ["todo", todoId] });
 
 			const previousTodo = queryClient.getQueryData<TodoWithTasks>([
 				"todo",
-				todoListId,
+				todoId,
 			]);
 
 			if (!previousTodo) throw new Error("No previous todo found");
 
-			const optimisticTodo = removeTaskFromCache(previousTodo, deleted.taskId);
+			const removeTask = (
+				tasks: TodoWithTasks["tasks"],
+				id: string,
+			): TodoWithTasks["tasks"] => {
+				return tasks
+					.filter((task) => task.id !== id)
+					.map((task) => ({
+						...task,
+						children: removeTask(task.children ?? [], id),
+					}));
+			};
 
-			queryClient.setQueryData(["todo", todoListId], optimisticTodo);
+			const optimisticTodo = {
+				...previousTodo,
+				tasks: removeTask(previousTodo.tasks, deleted.taskId),
+			};
+
+			queryClient.setQueryData(["todo", todoId], optimisticTodo);
 
 			return { previousTodo };
 		},
 
 		onError: (_err, _deleted, context) => {
-			if (todoListId && context?.previousTodo) {
-				queryClient.setQueryData(["todo", todoListId], context.previousTodo);
+			if (context?.previousTodo) {
+				queryClient.setQueryData(["todo", todoId], context.previousTodo);
 			}
 		},
 
 		onSettled: () => {
-			if (todoListId) {
-				queryClient.invalidateQueries({ queryKey: ["todo", todoListId] });
-			}
+			queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+			queryClient.invalidateQueries({ queryKey: ["todos"] });
 		},
 	});

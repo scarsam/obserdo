@@ -1,13 +1,13 @@
+import { useCreateTodoMutation } from "@/api/todos";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod/v4";
-import { Label } from "../ui/label";
 import { Button } from "../ui/button";
 import { Input } from "../ui/input";
-import { useCreateTodoMutation } from "@/api/todos";
+import { Label } from "../ui/label";
 
 const todoSchema = z.object({
 	name: z.string().min(1, "Name is required"),
-	description: z.string(),
+	description: z.string().min(1, "Description is required"),
 });
 
 export const TodoCreateForm = ({
@@ -68,7 +68,7 @@ export const TodoCreateForm = ({
 						return (
 							<>
 								<Label className="flex-col items-start mt-3">
-									Description (optional)
+									Description
 									<Input
 										id={field.name}
 										name={field.name}

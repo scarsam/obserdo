@@ -1,7 +1,7 @@
+import { type Todo, useEditTodoMutation } from "@/api/todos";
 import { useForm } from "@tanstack/react-form";
 import { z } from "zod";
-import { useEditTodoMutation, type Todo } from "@/api/todos";
-import type { Row } from "@tanstack/react-table";
+import { CopyButton } from "../clipboard-button";
 import { Label } from "../ui/label";
 import {
 	Select,
@@ -10,22 +10,21 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "../ui/select";
-import { CopyButton } from "../clipboard-button";
 
 const shareSchema = z.object({
 	collaboratorPermission: z.union([z.literal("read"), z.literal("write")]),
 });
 
 export const TodoShareForm = ({
-	row,
+	todo,
 }: {
-	row: Row<Todo>;
+	todo: Todo;
 }) => {
 	const mutation = useEditTodoMutation();
 
 	const form = useForm({
 		defaultValues: {
-			collaboratorPermission: row.original.collaboratorPermission || "read",
+			collaboratorPermission: todo.collaboratorPermission || "read",
 		},
 		validators: {
 			onMount: shareSchema,
@@ -34,9 +33,9 @@ export const TodoShareForm = ({
 
 		onSubmit: ({ value }) => {
 			mutation.mutate({
-				id: row.original.id,
-				name: row.original.name,
-				description: row.original.description,
+				id: todo.id,
+				name: todo.name,
+				description: todo.description,
 				collaboratorPermission: value.collaboratorPermission,
 			});
 			form.reset();
@@ -80,7 +79,7 @@ export const TodoShareForm = ({
 				}}
 			/>
 			<CopyButton
-				value={`${window.location.origin}/${row.original.id}`}
+				value={`${window.location.origin}/${todo.id}`}
 				isLoading={mutation.isPending}
 			/>
 		</form>

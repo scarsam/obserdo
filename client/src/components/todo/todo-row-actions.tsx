@@ -1,46 +1,58 @@
-import { Archive } from "lucide-react";
+import { Archive, ListTodo } from "lucide-react";
 
-import { Button } from "../ui/button";
 import type { Todo } from "@/api/todos";
 import { useEditTodoMutation } from "@/api/todos";
-import { Dialog } from "../dialog";
-import { TodoEditForm } from "./todo-edit-form";
 import type { Row } from "@tanstack/react-table";
+import { Dialog } from "../dialog";
+import { Button } from "../ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "../ui/tooltip";
 import { TodoShareForm } from "./todo-share-form";
 
 export function TodoRowActions({ row }: { row: Row<Todo> }) {
 	const mutation = useEditTodoMutation();
+	const isArchived = row.original.status === "archived";
+	const isDone = row.original.status === "done";
 
 	return (
 		<div className="flex">
-			<Dialog
-				dialogType="editWithIcon"
-				dialogTitle={`Edit TODO-${row.index + 1}`}
-				dialogDescription="Edit the todo item and save to update."
-			>
-				<TodoEditForm row={row} />
-			</Dialog>
-			<Button
-				variant="ghost"
-				size="lg"
-				onClick={() => {
-					mutation.mutate({
-						id: row.original.id,
-						name: row.original.name,
-						description: row.original.description,
-						status: "archived",
-					});
-				}}
-			>
-				<Archive />
-				<span className="sr-only">Archive</span>
-			</Button>
+			<Tooltip>
+				<TooltipTrigger asChild>
+					<Button
+						disabled={isDone}
+						variant="ghost"
+						size="lg"
+						onClick={() => {
+							mutation.mutate({
+								id: row.original.id,
+								name: row.original.name,
+								description: row.original.description,
+								status: isArchived ? "todo" : "archived",
+							});
+						}}
+					>
+						{isArchived ? (
+							<>
+								<ListTodo />
+								<span className="sr-only">Todo</span>
+							</>
+						) : (
+							<>
+								<Archive />
+								<span className="sr-only">Archive</span>
+							</>
+						)}
+					</Button>
+				</TooltipTrigger>
+				<TooltipContent>
+					<p>{isArchived ? "Todo" : "Archive"}</p>
+				</TooltipContent>
+			</Tooltip>
 			<Dialog
 				dialogType="share"
 				dialogTitle="Share todo"
 				dialogDescription="Share and collaborate with others on this todo"
 			>
-				<TodoShareForm row={row} />
+				<TodoShareForm todo={row.original} />
 			</Dialog>
 		</div>
 	);

@@ -1,17 +1,22 @@
+import type { Task } from "@/api/tasks";
 import type { ColumnDef } from "@tanstack/react-table";
-import type { Task } from "@/api/todos";
 
+import { useBulkEditTasksMutation } from "@/api/tasks";
+import { cn, timeAgo } from "@/lib/utils";
+import {
+	ChevronDown,
+	ChevronRight,
+	CornerRightDown,
+	CornerUpLeft,
+} from "lucide-react";
+import { Dialog } from "../dialog";
 import { DataTableColumnHeader } from "../table/data-table-column-header";
-import { TaskRowActions } from "./task-row-actions";
-import { ChevronDown, ChevronRight } from "lucide-react";
 import { Button } from "../ui/button";
 import { Checkbox } from "../ui/checkbox";
-import { cn } from "@/lib/utils";
-import { useBulkEditTasksMutation } from "@/api/tasks";
 import { TaskEditForm } from "./task-edit-form";
-import { Dialog } from "../dialog";
+import { TaskRowActions } from "./task-row-actions";
 
-export const taskColumns: ColumnDef<Task>[] = [
+export const createTaskColumns = (canEdit: boolean): ColumnDef<Task>[] => [
 	{
 		accessorKey: "name",
 		header: ({ table }) => {
@@ -22,9 +27,13 @@ export const taskColumns: ColumnDef<Task>[] = [
 			);
 
 			return (
-				<>
+				<div className="flex items-center gap-3">
 					<Checkbox
-						className={cn(table.getIsSomeRowsSelected() && "border-blue-500")}
+						disabled={!canEdit}
+						className={cn(
+							table.getIsSomeRowsSelected() && "border-blue-500",
+							"border-gray-500",
+						)}
 						checked={table.getIsAllRowsSelected()}
 						onClick={table.getToggleAllRowsSelectedHandler()}
 						onCheckedChange={(checked) => {
@@ -38,22 +47,19 @@ export const taskColumns: ColumnDef<Task>[] = [
 							mutation.mutate(edits);
 						}}
 					/>
+					Name
 					<Button
-						variant="ghost"
+						variant="link"
+						className="hover:cursor-pointer px-0!"
 						size="sm"
 						onClick={table.getToggleAllRowsExpandedHandler()}
 						aria-label={
 							table.getIsAllRowsExpanded() ? "Collapse row" : "Expand row"
 						}
 					>
-						{table.getIsAllRowsExpanded() ? (
-							<ChevronDown className="h-4 w-4" />
-						) : (
-							<ChevronRight className="h-4 w-4" />
-						)}
+						{table.getIsAllRowsExpanded() ? <ChevronDown /> : <ChevronRight />}
 					</Button>
-					Name
-				</>
+				</div>
 			);
 		},
 		cell: ({ row, getValue }) => {
@@ -62,19 +68,25 @@ export const taskColumns: ColumnDef<Task>[] = [
 			return (
 				<div
 					style={{
-						paddingLeft: `${row.depth * 2}rem`,
+						paddingLeft: `${row.depth * 1.5}rem`,
 					}}
 				>
-					<div>
+					<div className="flex items-center gap-3">
 						<Checkbox
+							disabled={!canEdit}
 							className={cn(
 								!row.original.completed &&
 									row.getLeafRows().some((r) => r.original.completed) &&
 									"border-blue-500",
+								"border-gray-500",
 							)}
 							checked={row.original.completed}
 							onCheckedChange={(checked) => {
-								const rowsToEdit = [row, ...row.getLeafRows()];
+								const rowsToEdit = [
+									row,
+									...row.getParentRows(),
+									...row.getLeafRows(),
+								];
 								const edits = rowsToEdit.map((r) => ({
 									id: r.original.id,
 									name: r.original.name,
@@ -85,28 +97,30 @@ export const taskColumns: ColumnDef<Task>[] = [
 								mutation.mutate(edits);
 							}}
 						/>
+
+						{canEdit ? (
+							<Dialog
+								dialogType="edit"
+								openText={getValue<string>()}
+								dialogTitle="Edit Task"
+								dialogDescription="Edit the task and save to update."
+							>
+								<TaskEditForm row={row} />
+							</Dialog>
+						) : (
+							<span>{getValue<string>()}</span>
+						)}
 						{row.getCanExpand() && (
 							<Button
-								variant="ghost"
+								variant="link"
+								className="hover:cursor-pointer px-0!"
 								size="sm"
 								onClick={() => row.toggleExpanded()}
 								aria-label={row.getIsExpanded() ? "Collapse row" : "Expand row"}
 							>
-								{row.getIsExpanded() ? (
-									<ChevronDown className="h-4 w-4" />
-								) : (
-									<ChevronRight className="h-4 w-4" />
-								)}
+								{row.getIsExpanded() ? <ChevronDown /> : <ChevronRight />}
 							</Button>
 						)}
-						<Dialog
-							dialogType="edit"
-							openText={getValue<string>()}
-							dialogTitle="Edit Task"
-							dialogDescription="Edit the task and save to update."
-						>
-							<TaskEditForm row={row} />
-						</Dialog>
 					</div>
 				</div>
 			);
@@ -121,7 +135,7 @@ export const taskColumns: ColumnDef<Task>[] = [
 		cell: ({ row }) => (
 			<div className="flex space-x-2">
 				<span className="max-w-[500px] truncate font-medium">
-					{row.getValue("createdAt")}
+					{timeAgo(row.getValue("createdAt"))}
 				</span>
 			</div>
 		),
@@ -137,7 +151,7 @@ export const taskColumns: ColumnDef<Task>[] = [
 			return (
 				<div className="flex space-x-2">
 					<span className="max-w-[500px] truncate font-medium">
-						{row.getValue("updatedAt")}
+						{timeAgo(row.getValue("updatedAt"))}
 					</span>
 				</div>
 			);
@@ -148,6 +162,6 @@ export const taskColumns: ColumnDef<Task>[] = [
 		header: ({ column }) => (
 			<DataTableColumnHeader column={column} title="Actions" />
 		),
-		cell: ({ row }) => <TaskRowActions row={row} />,
+		cell: ({ row }) => <TaskRowActions row={row} canEdit={canEdit} />,
 	},
 ];

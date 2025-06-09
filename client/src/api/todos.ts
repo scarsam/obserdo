@@ -1,7 +1,7 @@
+import { queryClient } from "@/lib/react-query";
 import { queryOptions, useMutation } from "@tanstack/react-query";
 import type { InferRequestType, InferResponseType } from "hono/client";
 import { client } from "./client";
-import { queryClient } from "@/lib/react-query";
 
 // --- Todo Types ---
 const $todosPost = client.api.todos.$post;
@@ -29,8 +29,8 @@ export type Todo = Omit<TodoWithTasks, "tasks">;
 // export type DeleteTask = InferRequestType<typeof $taskDelete>["param"];
 
 // Infer Task type from TodoWithTasks
-export type Task = TodoWithTasks extends { tasks: (infer T)[] } ? T : never;
-export type TaskWithChildren = Task & { children: TaskWithChildren[] };
+// export type Task = TodoWithTasks extends { tasks: (infer T)[] } ? T : never;
+// export type TaskWithChildren = Task & { children: TaskWithChildren[] };
 
 // --- API Functions ---
 export const todosQueryOptions = () =>
@@ -38,7 +38,9 @@ export const todosQueryOptions = () =>
 		queryKey: ["todos"],
 		queryFn: async () => {
 			const res = await client.api.todos.$get();
+
 			if (!res.ok) throw new Error("Failed to fetch todos");
+
 			return res.json();
 		},
 		staleTime: 1000 * 60 * 5,
@@ -49,7 +51,9 @@ export const todoQueryOptions = (id: string) =>
 		queryKey: ["todo", id],
 		queryFn: async () => {
 			const res = await client.api.todos[":id"].$get({ param: { id } });
+
 			if (!res.ok) throw new Error("Failed to fetch todo");
+
 			return res.json();
 		},
 		staleTime: 1000 * 60 * 5,
@@ -57,7 +61,9 @@ export const todoQueryOptions = (id: string) =>
 
 export const createTodo = async (newTodo: CreateTodo) => {
 	const res = await client.api.todos.$post({ json: newTodo });
+
 	if (!res.ok) throw new Error("Failed to create todo");
+
 	return res.json();
 };
 
@@ -67,34 +73,9 @@ export const editTodo = async (editTodo: EditTodo) => {
 		json: editTodo,
 	});
 	if (!res.ok) throw new Error("Failed to edit todo");
+
 	return res.json();
 };
-
-// export const createTask = async (newTask: CreateTask) => {
-// 	const res = await client.api.todos[":id"].tasks.$post({
-// 		param: { id: newTask.id },
-// 		json: newTask,
-// 	});
-// 	if (!res.ok) throw new Error("Failed to create task");
-// 	return res.json();
-// };
-
-// export const editTask = async (editTask: EditTask) => {
-// 	const res = await client.api.todos[":id"].tasks[":taskId"].$put({
-// 		param: { id: editTask.id, taskId: editTask.taskId },
-// 		json: editTask,
-// 	});
-// 	if (!res.ok) throw new Error("Failed to edit task");
-// 	return res.json();
-// };
-
-// export const deleteTask = async (deleteTask: DeleteTask) => {
-// 	const res = await client.api.todos[":id"].tasks[":taskId"].$delete({
-// 		param: { id: deleteTask.id, taskId: deleteTask.taskId },
-// 	});
-// 	if (!res.ok) throw new Error("Failed to delete task");
-// 	return res.json();
-// };
 
 // Mutations
 export const useCreateTodoMutation = () =>
@@ -105,7 +86,7 @@ export const useCreateTodoMutation = () =>
 
 			const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]);
 
-			const optimisticTodo: TodoWithTasks = {
+			const optimisticTodo = {
 				id: crypto.randomUUID(),
 				name: newTodo.name,
 				description: newTodo.description ?? null,
@@ -117,7 +98,7 @@ export const useCreateTodoMutation = () =>
 				tasks: [],
 			};
 
-			queryClient.setQueryData<TodoWithTasks[]>(["todos"], (oldTodos = []) => [
+			queryClient.setQueryData<Todo[]>(["todos"], (oldTodos = []) => [
 				...oldTodos,
 				optimisticTodo,
 			]);
@@ -140,11 +121,9 @@ export const useEditTodoMutation = () =>
 		onMutate: async (newTodo) => {
 			await queryClient.cancelQueries({ queryKey: ["todos"] });
 
-			const previousTodos = queryClient.getQueryData<TodoWithTasks[]>([
-				"todos",
-			]);
+			const previousTodos = queryClient.getQueryData<Todo[]>(["todos"]);
 
-			queryClient.setQueryData<TodoWithTasks[]>(["todos"], (oldTodos = []) =>
+			queryClient.setQueryData<Todo[]>(["todos"], (oldTodos = []) =>
 				oldTodos.map((todo) =>
 					todo.id === newTodo.id
 						? {
