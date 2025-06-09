@@ -3,13 +3,9 @@ import { and, eq, or } from "drizzle-orm";
 import { Hono } from "hono";
 import { db } from "../db/index.js";
 import { tasks as tasksSchema, todos as todosSchema } from "../db/schema.js";
-// import { buildTaskTree } from "../../utils/task-tree-builder.js";
+
 import { server } from "../index.js";
-import {
-	type TodoContext,
-	tasksInsertSchema,
-	todoRouter,
-} from "../utils/types.js";
+import { type TodoContext, tasksInsertSchema } from "../utils/types.js";
 
 const app = new Hono<TodoContext>()
 	.post("/:todoId/tasks", zValidator("json", tasksInsertSchema), async (c) => {
