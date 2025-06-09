@@ -2,10 +2,11 @@ import { Hono } from "hono";
 import { auth } from "./lib/auth.js";
 import { corsMiddleware } from "./middleware/cors.js";
 import { authMiddleware } from "./middleware/auth.js";
-import { todoRouter } from "./routes/todo/index.js";
 import { createBunWebSocket } from "hono/bun";
 import type { ServerWebSocket } from "bun";
 import { logger } from "hono/logger";
+import todoRouter from "./routes/todos.js";
+import tasksRouter from "./routes/tasks.js";
 
 const { websocket, upgradeWebSocket } = createBunWebSocket<ServerWebSocket>();
 
@@ -28,6 +29,7 @@ const routes = app
 	.use("*", authMiddleware)
 	.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
 	.route("/api/todos", todoRouter)
+	.route("/api/tasks", tasksRouter)
 	.get("/health", (c) => c.json({ status: "ok" }))
 	.get(
 		"/ws",

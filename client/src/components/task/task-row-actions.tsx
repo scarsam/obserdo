@@ -28,7 +28,7 @@ export function TaskRowActions({
 				variant="ghost"
 				onClick={() => {
 					mutation.mutate({
-						id: row.original.todoListId,
+						todoId: row.original.todoListId,
 						taskId: row?.original.id,
 					});
 				}}

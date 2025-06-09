@@ -10,9 +10,12 @@ export const updateTasksInCache = (
 		...todo,
 		tasks: exists
 			? todo.tasks.map((t) =>
-					t.id === task.id ? { ...t, ...task, children: t.children } : t,
+					t.id === task.id ? { ...task, children: [] } : { ...t, children: [] },
 				)
-			: [...todo.tasks, task],
+			: [
+					...todo.tasks.map((t) => ({ ...t, children: [] })),
+					{ ...task, children: [] },
+				],
 	};
 };
 
@@ -22,7 +25,9 @@ export const removeTaskFromCache = (
 	taskId: string,
 ): TodoWithTasks => ({
 	...todo,
-	tasks: todo.tasks.filter((t) => t.id !== taskId),
+	tasks: todo.tasks
+		.filter((t) => t.id !== taskId)
+		.map((t) => ({ ...t, children: [] })),
 });
 
 // Add a new task (root or subtask)
@@ -31,7 +36,10 @@ export const addTaskToCache = (
 	task: TaskWithChildren,
 ): TodoWithTasks => ({
 	...todo,
-	tasks: [...todo.tasks, task],
+	tasks: [
+		...todo.tasks.map((t) => ({ ...t, children: [] })),
+		{ ...task, children: [] },
+	],
 });
 
 // Update a task by id
@@ -41,6 +49,6 @@ export const updateTaskInCache = (
 ): TodoWithTasks => ({
 	...todo,
 	tasks: todo.tasks.map((t) =>
-		t.id === task.id ? { ...t, ...task, children: t.children } : t,
+		t.id === task.id ? { ...task, children: [] } : { ...t, children: [] },
 	),
 });

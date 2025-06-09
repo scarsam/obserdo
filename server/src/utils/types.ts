@@ -1,9 +1,9 @@
 import { Hono } from "hono";
-import type { auth } from "../../lib/auth.js";
-import type { z } from "zod";
-import { todos, tasks } from "../../db/schema.js";
+import type { auth } from "../lib/auth.js";
+import { z } from "zod";
+import { todos, tasks } from "../db/schema.js";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
-import type { InferRequestType, InferResponseType } from "hono/client";
+import { zValidator } from "@hono/zod-validator";
 
 // Context type for the router
 export type TodoContext = {
@@ -22,11 +22,12 @@ export type TodoInsert = typeof todos.$inferInsert;
 export type Task = typeof tasks.$inferSelect;
 export type TaskInsert = typeof tasks.$inferInsert;
 
-// Validation Schemas
+// Validation schemas
 export const todosInsertSchema = createInsertSchema(todos).omit({
 	userId: true,
 });
 export const todosSelectSchema = createSelectSchema(todos);
+
 export const tasksInsertSchema = createInsertSchema(tasks).omit({
 	todoListId: true,
 });

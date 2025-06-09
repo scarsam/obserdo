@@ -16,17 +16,17 @@ type TodoResponse = InferResponseType<typeof $todoGet>;
 export type TodoWithTasks = Exclude<TodoResponse, { error: string }>;
 export type Todo = Omit<TodoWithTasks, "tasks">;
 
-// --- Task Types ---
-const $tasksPost = client.api.todos[":id"].tasks.$post;
-export type CreateTask = InferRequestType<typeof $tasksPost>["json"] &
-	InferRequestType<typeof $tasksPost>["param"];
+// // --- Task Types ---
+// const $tasksPost = client.api.todos[":id"].tasks.$post;
+// export type CreateTask = InferRequestType<typeof $tasksPost>["json"] &
+// 	InferRequestType<typeof $tasksPost>["param"];
 
-const $taskPut = client.api.todos[":id"].tasks[":taskId"].$put;
-export type EditTask = InferRequestType<typeof $taskPut>["json"] &
-	InferRequestType<typeof $taskPut>["param"];
+// const $taskPut = client.api.todos[":id"].tasks[":taskId"].$put;
+// export type EditTask = InferRequestType<typeof $taskPut>["json"] &
+// 	InferRequestType<typeof $taskPut>["param"];
 
-const $taskDelete = client.api.todos[":id"].tasks[":taskId"].$delete;
-export type DeleteTask = InferRequestType<typeof $taskDelete>["param"];
+// const $taskDelete = client.api.todos[":id"].tasks[":taskId"].$delete;
+// export type DeleteTask = InferRequestType<typeof $taskDelete>["param"];
 
 // Infer Task type from TodoWithTasks
 export type Task = TodoWithTasks extends { tasks: (infer T)[] } ? T : never;
@@ -70,31 +70,31 @@ export const editTodo = async (editTodo: EditTodo) => {
 	return res.json();
 };
 
-export const createTask = async (newTask: CreateTask) => {
-	const res = await client.api.todos[":id"].tasks.$post({
-		param: { id: newTask.id },
-		json: newTask,
-	});
-	if (!res.ok) throw new Error("Failed to create task");
-	return res.json();
-};
+// export const createTask = async (newTask: CreateTask) => {
+// 	const res = await client.api.todos[":id"].tasks.$post({
+// 		param: { id: newTask.id },
+// 		json: newTask,
+// 	});
+// 	if (!res.ok) throw new Error("Failed to create task");
+// 	return res.json();
+// };
 
-export const editTask = async (editTask: EditTask) => {
-	const res = await client.api.todos[":id"].tasks[":taskId"].$put({
-		param: { id: editTask.id, taskId: editTask.taskId },
-		json: editTask,
-	});
-	if (!res.ok) throw new Error("Failed to edit task");
-	return res.json();
-};
+// export const editTask = async (editTask: EditTask) => {
+// 	const res = await client.api.todos[":id"].tasks[":taskId"].$put({
+// 		param: { id: editTask.id, taskId: editTask.taskId },
+// 		json: editTask,
+// 	});
+// 	if (!res.ok) throw new Error("Failed to edit task");
+// 	return res.json();
+// };
 
-export const deleteTask = async (deleteTask: DeleteTask) => {
-	const res = await client.api.todos[":id"].tasks[":taskId"].$delete({
-		param: { id: deleteTask.id, taskId: deleteTask.taskId },
-	});
-	if (!res.ok) throw new Error("Failed to delete task");
-	return res.json();
-};
+// export const deleteTask = async (deleteTask: DeleteTask) => {
+// 	const res = await client.api.todos[":id"].tasks[":taskId"].$delete({
+// 		param: { id: deleteTask.id, taskId: deleteTask.taskId },
+// 	});
+// 	if (!res.ok) throw new Error("Failed to delete task");
+// 	return res.json();
+// };
 
 // Mutations
 export const useCreateTodoMutation = () =>

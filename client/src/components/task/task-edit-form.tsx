@@ -30,6 +30,7 @@ export const TaskEditForm = ({
 		},
 		onSubmit: ({ value }) => {
 			mutation.mutate({
+				todoId: row.original.todoListId,
 				id: row.original.todoListId,
 				taskId: row.original.id,
 				name: value.name,

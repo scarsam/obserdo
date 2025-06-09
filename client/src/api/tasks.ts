@@ -9,10 +9,10 @@ import {
 } from "@/api/optimistic-updates";
 import type { TaskWithChildren, TodoWithTasks } from "./todos";
 
-const $tasksPost = client.api.todos[":id"].tasks.$post;
-const $tasksPut = client.api.todos[":id"].tasks[":taskId"].$put;
-const $tasksBulkPut = client.api.todos[":id"].tasks["bulk-edit"].$put;
-const $tasksDelete = client.api.todos[":id"].tasks[":taskId"].$delete;
+const $tasksPost = client.api.tasks[":todoId"].tasks.$post;
+const $tasksPut = client.api.tasks[":todoId"].tasks[":taskId"].edit.$put;
+const $tasksBulkPut = client.api.tasks[":todoId"].tasks["bulk-edit"].$put;
+const $tasksDelete = client.api.tasks[":todoId"].tasks[":taskId"].$delete;
 
 // Request types
 export type CreateTaskRequest = InferRequestType<typeof $tasksPost>["json"] &
@@ -22,40 +22,38 @@ export type UpdateTaskRequest = InferRequestType<typeof $tasksPut>["json"] &
 export type BulkUpdateTaskRequest = InferRequestType<
 	typeof $tasksBulkPut
 >["json"];
+export type DeleteTaskRequest = InferRequestType<typeof $tasksDelete>["param"];
 
 // API functions
-export const tasksQueryOptions = (todoId: string) =>
-	queryOptions({
-		queryKey: ["tasks", todoId],
-		queryFn: async () => {
-			const res = await client.api.todos[":id"].$get({
-				param: { id: todoId },
-			});
+// export const tasksQueryOptions = (todoId: string) =>
+// 	queryOptions({
+// 		queryKey: ["tasks", todoId],
+// 		queryFn: async () => {
+// 			const res = await client.api.todos[":id"].$get({
+// 				param: { id: todoId },
+// 			});
 
-			if (!res.ok) throw new Error("Failed to fetch tasks");
+// 			if (!res.ok) throw new Error("Failed to fetch tasks");
 
-			const data = await res.json();
-			return data.tasks;
-		},
-		staleTime: 1000 * 60 * 5,
-	});
+// 			const data = await res.json();
+// 			return data.tasks;
+// 		},
+// 		staleTime: 1000 * 60 * 5,
+// 	});
 
-export const createTask = async ({ id, ...data }: CreateTaskRequest) => {
+export const createTask = async ({ ...data }: CreateTaskRequest) => {
 	const res = await $tasksPost({
-		param: { id },
+		param: { todoId: data.todoId },
 		json: data,
 	});
+
 	if (!res.ok) throw new Error("Failed to create task");
 	return res.json();
 };
 
-export const updateTask = async ({
-	id,
-	taskId,
-	...data
-}: UpdateTaskRequest) => {
+export const updateTask = async ({ taskId, ...data }: UpdateTaskRequest) => {
 	const res = await $tasksPut({
-		param: { id, taskId },
+		param: { todoId: data.todoId, taskId },
 		json: data,
 	});
 
@@ -69,7 +67,7 @@ export const bulkUpdateTasks = async ({
 	...data
 }: { id: string; json: BulkUpdateTaskRequest }) => {
 	const res = await $tasksBulkPut({
-		param: { id },
+		param: { todoId: id },
 		json: data.json,
 	});
 
@@ -78,12 +76,9 @@ export const bulkUpdateTasks = async ({
 	return res.json();
 };
 
-export const deleteTask = async ({
-	id,
-	taskId,
-}: { id: string; taskId: string }) => {
+export const deleteTask = async ({ todoId, taskId }: DeleteTaskRequest) => {
 	const res = await $tasksDelete({
-		param: { id, taskId },
+		param: { todoId, taskId },
 	});
 
 	if (!res.ok) throw new Error("Failed to delete task");
@@ -134,25 +129,25 @@ export const useCreateTaskMutation = (todoId: string) =>
 		},
 	});
 
-export const useEditTaskMutation = (todoListId?: string) =>
+export const useEditTaskMutation = (todoId?: string) =>
 	useMutation({
 		mutationFn: updateTask,
 
 		onMutate: async (newTask) => {
-			if (!todoListId) throw new Error("Missing todoListId");
+			if (!todoId) throw new Error("Missing todoListId");
 
-			await queryClient.cancelQueries({ queryKey: ["todo", todoListId] });
+			await queryClient.cancelQueries({ queryKey: ["todo", todoId] });
 
 			const previousTodo = queryClient.getQueryData<TodoWithTasks>([
 				"todo",
-				todoListId,
+				todoId,
 			]);
 			if (!previousTodo) throw new Error("No previous todo found");
 
 			const updatedTask: TaskWithChildren = {
 				id: newTask.taskId,
 				name: newTask.name ?? "",
-				todoListId,
+				todoListId: todoId,
 				parentTaskId: newTask.parentTaskId ?? null,
 				completed: newTask.completed ?? false,
 				createdAt: new Date().toISOString(),
@@ -162,20 +157,20 @@ export const useEditTaskMutation = (todoListId?: string) =>
 
 			const optimisticTodo = updateTaskInCache(previousTodo, updatedTask);
 
-			queryClient.setQueryData(["todo", todoListId], optimisticTodo);
+			queryClient.setQueryData(["todo", todoId], optimisticTodo);
 
 			return { previousTodo };
 		},
 
 		onError: (_err, _newTask, context) => {
-			if (todoListId && context?.previousTodo) {
-				queryClient.setQueryData(["todo", todoListId], context.previousTodo);
+			if (todoId && context?.previousTodo) {
+				queryClient.setQueryData(["todo", todoId], context.previousTodo);
 			}
 		},
 
 		onSettled: () => {
-			if (todoListId) {
-				queryClient.invalidateQueries({ queryKey: ["todo", todoListId] });
+			if (todoId) {
+				queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
 			}
 		},
 	});
@@ -197,20 +192,27 @@ export const useBulkEditTasksMutation = (todoListId?: string) =>
 				"todo",
 				todoListId,
 			]);
+
 			if (!previousTodo) throw new Error("No previous todo found");
 
 			const now = new Date().toISOString();
 
-			const tasksToUpdate = edits.map((edit) => ({
-				id: edit.id ?? crypto.randomUUID(),
-				name: edit.name ?? "",
-				todoListId,
-				parentTaskId: edit.parentTaskId ?? null,
-				completed: edit.completed ?? false,
-				createdAt: now,
-				updatedAt: now,
-				children: [],
-			}));
+			// Todo: Fix this
+			const tasksToUpdate = edits.map((edit) => {
+				const existingTask = previousTodo.tasks.find((t) => t.id === edit.id);
+
+				console.log(existingTask);
+				return {
+					id: edit.id ?? crypto.randomUUID(),
+					name: edit.name ?? "",
+					todoListId,
+					parentTaskId: edit.parentTaskId ?? existingTask?.parentTaskId ?? null,
+					completed: edit.completed ?? false,
+					createdAt: now,
+					updatedAt: now,
+					children: existingTask?.children ?? [],
+				};
+			});
 
 			const optimisticTodo = tasksToUpdate.reduce((todo, task) => {
 				return updateTaskInCache(todo, task);
@@ -247,6 +249,7 @@ export const useDeleteTaskMutation = (todoListId?: string) =>
 				"todo",
 				todoListId,
 			]);
+
 			if (!previousTodo) throw new Error("No previous todo found");
 
 			const optimisticTodo = removeTaskFromCache(previousTodo, deleted.taskId);

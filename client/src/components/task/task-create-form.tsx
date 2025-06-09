@@ -33,7 +33,7 @@ export const TaskCreateForm = ({
 		},
 		onSubmit: ({ value }) => {
 			const newTask = {
-				id: todoId ?? row.original.todoListId,
+				todoId: id,
 				name: value.name,
 				parentTaskId: row?.original.id,
 			};
