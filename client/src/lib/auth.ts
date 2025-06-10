@@ -5,8 +5,8 @@ import { baseUrl } from "./env";
 import { queryOptions } from "@tanstack/react-query";
 
 export const authClient = createAuthClient({
-	/** The base URL of the server (optional if you're using the same domain) */
-	baseURL: baseUrl,
+	// /** The base URL of the server (optional if you're using the same domain) */
+	// baseURL: baseUrl,
 	plugins: [anonymousClient()],
 });
 
