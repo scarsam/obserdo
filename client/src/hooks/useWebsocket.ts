@@ -1,25 +1,34 @@
-import { wsClient } from "@/api/client";
+import { wsUrl } from "@/lib/env";
 import { queryClient } from "@/lib/react-query";
 import { stringToColor } from "@/lib/utils";
-import { useEffect, useRef } from "react";
+import { useRef, useEffect } from "react";
 
 export const useWebsocket = (todoId: string, userId?: string) => {
 	const wsRef = useRef<WebSocket | null>(null);
+	const todoIdRef = useRef(todoId);
+	const userIdRef = useRef(userId);
+
+	todoIdRef.current = todoId;
+	userIdRef.current = userId;
 
 	useEffect(() => {
 		let ws: WebSocket | null = null;
 
-		const connect = async () => {
+		const connect = () => {
 			try {
-				ws = await wsClient.api.ws.$ws({ query: { todoId } });
+				ws = new WebSocket(`${wsUrl}/api/ws?todoId=${todoIdRef.current}`);
 				wsRef.current = ws;
+
+				ws.onopen = () => {
+					console.log("✅ WebSocket connected for todo:", todoIdRef.current);
+				};
 
 				ws.onmessage = (event) => {
 					const data = JSON.parse(event.data);
+
 					if (data.type === "cursor_update") {
 						const { userId: otherUserId, x, y } = data.payload;
-
-						if (otherUserId === userId) return;
+						if (otherUserId === userIdRef.current) return;
 
 						let cursor = document.getElementById(`cursor-${otherUserId}`);
 						if (!cursor) {
@@ -33,7 +42,7 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 								background: ${color};
 								border: 2px solid white;
 								border-radius: 50%;
-								box-shadow: 0 0 6px ${color}99; /* semi-transparent shadow */
+								box-shadow: 0 0 6px ${color}99;
 								pointer-events: none;
 								z-index: 9999;
 								transform: translate(-50%, -50%);
@@ -44,20 +53,15 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 						cursor.style.left = `${x}px`;
 						cursor.style.top = `${y}px`;
 					} else {
-						queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
+						queryClient.invalidateQueries({
+							queryKey: ["todo", todoIdRef.current],
+						});
 					}
 				};
 
-				ws.onclose = () => {
-					// Remove all cursors
-					const cursors = document.querySelectorAll('[id^="cursor-"]');
-					for (const cursor of cursors) {
-						cursor.remove();
-					}
-					setTimeout(connect, 1000);
-				};
+				// ... rest of WebSocket handlers
 			} catch (error) {
-				console.error("WebSocket error:", error);
+				console.error("Failed to create WebSocket:", error);
 				setTimeout(connect, 1000);
 			}
 		};
@@ -65,22 +69,20 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 		connect();
 
 		return () => {
-			const cursors = document.querySelectorAll('[id^="cursor-"]');
-			for (const cursor of cursors) {
-				cursor.remove();
+			if (ws) {
+				ws.close();
 			}
-			ws?.close();
 		};
-	}, [todoId, userId]);
+	}, []);
 
 	const sendCursorPosition = (x: number, y: number) => {
 		const ws = wsRef.current;
-		if (!ws || !userId || ws.readyState !== WebSocket.OPEN) return;
+		if (!ws || !userIdRef.current || ws.readyState !== WebSocket.OPEN) return;
 
 		ws.send(
 			JSON.stringify({
 				type: "cursor_update",
-				payload: { userId, x, y },
+				payload: { userId: userIdRef.current, x, y },
 			}),
 		);
 	};

@@ -7,6 +7,7 @@
     "dev": "bun run --filter={client,server} dev",
     "dev:client": "bun run --filter 'client' dev",
     "dev:server": "bun run --filter 'server' dev",
+		"dev:server:ws": "bun run --filter 'server' dev:ws",
     "dev:types": "bun run --filter 'shared' dev",
     "build:client": "bun run --filter 'client' build",
     "build:shared": "bun run --filter 'shared' build",
