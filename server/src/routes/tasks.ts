@@ -41,7 +41,7 @@ const app = new Hono<TodoContext>()
 				})
 				.returning();
 
-			server.publish(
+			server?.publish(
 				`todo-${todo.id}`,
 				JSON.stringify({
 					type: "task_created",
@@ -128,7 +128,7 @@ const app = new Hono<TodoContext>()
 				return updates;
 			});
 
-			server.publish(
+			server?.publish(
 				`todo-${todo.id}`,
 				JSON.stringify({
 					type: "task_bulk_updated",
@@ -171,7 +171,7 @@ const app = new Hono<TodoContext>()
 				)
 				.returning();
 
-			server.publish(
+			server?.publish(
 				`todo-${todo.id}`,
 				JSON.stringify({
 					type: "task_updated",
@@ -219,7 +219,7 @@ const app = new Hono<TodoContext>()
 				.where(eq(todosSchema.id, todoId));
 		}
 
-		server.publish(
+		server?.publish(
 			`todo-${todo.id}`,
 			JSON.stringify({
 				type: "task_deleted",

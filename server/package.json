@@ -5,6 +5,7 @@
 	"types": "dist/index.d.ts",
 	"scripts": {
 		"dev": "bun run --hot src/index.ts",
+		"dev:ws": "bun run src/index.ts",
 		"build": "tsc",
 		"start": "bun run dist/index.js",
 		"db:studio": "drizzle-kit studio",

@@ -17,16 +17,7 @@ const app = new Hono<{
 	};
 }>().basePath("/api");
 
-let server: ReturnType<typeof Bun.serve>;
-
-if (import.meta.main) {
-	server = Bun.serve({
-		fetch: app.fetch,
-		hostname: "0.0.0.0",
-		port: process.env.PORT ? Number.parseInt(process.env.PORT) : 3000,
-		websocket,
-	});
-}
+let server: ReturnType<typeof Bun.serve> | null = null;
 
 const routes = app
 	.use("*", logger())
@@ -44,46 +35,100 @@ const routes = app
 
 			return {
 				onMessage(event) {
-					const data = JSON.parse(event.data as string);
+					try {
+						const data = JSON.parse(event.data as string);
 
-					if (data.type === "cursor_update") {
-						const { userId, x, y } = data.payload as unknown as {
-							userId: string;
-							x: number;
-							y: number;
-						};
+						if (data.type === "cursor_update") {
+							const { userId, x, y } = data.payload as {
+								userId: string;
+								x: number;
+								y: number;
+							};
 
-						server.publish(
-							topic,
-							JSON.stringify({
-								type: "cursor_update",
-								payload: {
-									userId,
-									x,
-									y,
-								},
-							}),
-						);
+							// Check if server exists before publishing
+							if (server) {
+								server.publish(
+									topic,
+									JSON.stringify({
+										type: "cursor_update",
+										payload: {
+											userId,
+											x,
+											y,
+										},
+									}),
+								);
+							} else {
+								console.warn("Server not available for publishing");
+							}
+						}
+					} catch (error) {
+						console.error("Error processing WebSocket message:", error);
 					}
 				},
-				onOpen(_, ws) {
-					const rawWs = ws.raw;
-					rawWs?.subscribe(topic);
 
-					console.log(`WebSocket opened and subscribed to ${topic}`);
+				onOpen(_, ws) {
+					try {
+						const rawWs = ws.raw;
+						rawWs?.subscribe(topic);
+						console.log(`WebSocket opened and subscribed to ${topic}`);
+					} catch (error) {
+						console.error("Error in WebSocket onOpen:", error);
+					}
 				},
 
 				onClose(_, ws) {
-					const rawWs = ws.raw;
-					rawWs?.unsubscribe(topic);
+					try {
+						const rawWs = ws.raw;
+						rawWs?.unsubscribe(topic);
+						console.log(`WebSocket closed and unsubscribed from ${topic}`);
+						// Don't call rawWs?.close() here - it's already closing
+					} catch (error) {
+						console.error("Error in WebSocket onClose:", error);
+					}
+				},
 
-					console.log(`WebSocket closed and unsubscribed from ${topic}`);
-
-					rawWs?.close();
+				onError(_, error) {
+					console.error("WebSocket error:", error);
 				},
 			};
 		}),
 	);
+
+// Create server instance after routes are defined
+if (import.meta.main) {
+	try {
+		server = Bun.serve({
+			fetch: app.fetch,
+			hostname: "0.0.0.0",
+			port: process.env.PORT ? Number.parseInt(process.env.PORT) : 3000,
+			websocket,
+		});
+
+		console.log(`🚀 Server started at ${new Date().toISOString()}`);
+		console.log(`📡 WebSocket server running on ws://localhost:${server.port}`);
+	} catch (error) {
+		console.error("Failed to start server:", error);
+		process.exit(1);
+	}
+}
+
+// Add global error handlers
+process.on("uncaughtException", (error) => {
+	console.error("❌ Uncaught Exception:", error);
+	// Don't exit in development, just log
+	if (process.env.NODE_ENV === "production") {
+		process.exit(1);
+	}
+});
+
+process.on("unhandledRejection", (reason, promise) => {
+	console.error("❌ Unhandled Rejection at:", promise, "reason:", reason);
+	// Don't exit in development, just log
+	if (process.env.NODE_ENV === "production") {
+		process.exit(1);
+	}
+});
 
 export type AppType = typeof routes;
 export { server, routes };

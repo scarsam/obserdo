@@ -87,7 +87,7 @@ const app = new Hono<TodoContext>()
 			.where(eq(todosSchema.id, todo.id))
 			.returning();
 
-		server.publish(
+		server?.publish(
 			`todo-${todo.id}`,
 			JSON.stringify({
 				type: "todo_updated",
