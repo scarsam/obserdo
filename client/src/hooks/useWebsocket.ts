@@ -34,9 +34,14 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 						const targetElement = document.body;
 						const rect = targetElement.getBoundingClientRect();
 
-						// Convert relative coordinates to absolute positions
-						const absoluteX = rect.left + relativeX * rect.width;
-						const absoluteY = rect.top + relativeY * rect.height;
+						const absoluteX = Math.max(
+							0,
+							Math.min(window.innerWidth, rect.left + relativeX * rect.width),
+						);
+						const absoluteY = Math.max(
+							0,
+							Math.min(window.innerHeight, rect.top + relativeY * rect.height),
+						);
 
 						let cursor = document.getElementById(`cursor-${otherUserId}`);
 						if (!cursor) {
