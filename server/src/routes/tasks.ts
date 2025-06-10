@@ -41,13 +41,15 @@ const app = new Hono<TodoContext>()
 				})
 				.returning();
 
-			server?.publish(
-				`todo-${todo.id}`,
-				JSON.stringify({
-					type: "task_created",
-					data: createdTask[0],
-				}),
-			);
+			if (server) {
+				server.publish(
+					`todo-${todo.id}`,
+					JSON.stringify({
+						type: "task_created",
+						data: createdTask[0],
+					}),
+				);
+			}
 
 			return c.json(createdTask[0]);
 		} catch (error) {
@@ -128,13 +130,15 @@ const app = new Hono<TodoContext>()
 				return updates;
 			});
 
-			server?.publish(
-				`todo-${todo.id}`,
-				JSON.stringify({
-					type: "task_bulk_updated",
-					data: updatedTasks,
-				}),
-			);
+			if (server) {
+				server.publish(
+					`todo-${todo.id}`,
+					JSON.stringify({
+						type: "task_bulk_updated",
+						data: updatedTasks,
+					}),
+				);
+			}
 
 			return c.json(updatedTasks);
 		},
@@ -171,13 +175,15 @@ const app = new Hono<TodoContext>()
 				)
 				.returning();
 
-			server?.publish(
-				`todo-${todo.id}`,
-				JSON.stringify({
-					type: "task_updated",
-					data: updatedTask[0],
-				}),
-			);
+			if (server) {
+				server.publish(
+					`todo-${todo.id}`,
+					JSON.stringify({
+						type: "task_updated",
+						data: updatedTask[0],
+					}),
+				);
+			}
 
 			return c.json(updatedTask[0]);
 		},
@@ -219,13 +225,15 @@ const app = new Hono<TodoContext>()
 				.where(eq(todosSchema.id, todoId));
 		}
 
-		server?.publish(
-			`todo-${todo.id}`,
-			JSON.stringify({
-				type: "task_deleted",
-				data: deletedTask[0],
-			}),
-		);
+		if (server) {
+			server.publish(
+				`todo-${todo.id}`,
+				JSON.stringify({
+					type: "task_deleted",
+					data: deletedTask[0],
+				}),
+			);
+		}
 
 		return c.json(deletedTask[0]);
 	});
