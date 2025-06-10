@@ -29,20 +29,22 @@ import { type PropsWithChildren, useState } from "react";
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
 	data: TData[];
+	initialFilters?: ColumnFiltersState;
 }
 
 export function DataTable<TData, TValue>({
 	children,
 	columns,
 	data,
+	initialFilters,
 }: PropsWithChildren<DataTableProps<TData, TValue>>) {
 	const [rowSelection, setRowSelection] = useState({});
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [sorting, setSorting] = useState<SortingState>([]);
 	const [expanded, setExpanded] = useState<ExpandedState>({});
-	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([
-		{ id: "status", value: ["todo", "in-progress", "done"] },
-	]);
+	const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>(
+		initialFilters ?? [],
+	);
 
 	const table = useReactTable({
 		data,

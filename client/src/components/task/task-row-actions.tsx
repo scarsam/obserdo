@@ -30,6 +30,7 @@ export function TaskRowActions({
 			<Tooltip>
 				<TooltipTrigger asChild disabled={!canEdit}>
 					<Button
+						size="lg"
 						variant="ghost"
 						onClick={() => {
 							mutation.mutate({

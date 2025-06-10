@@ -43,13 +43,10 @@ const routes = app
 			const topic = `todo-${todoId}`;
 
 			return {
-				onMessage(event, ws) {
-					// console.log("onMessage", event);
-					// console.log("ws", ws);
-
+				onMessage(event) {
 					const data = JSON.parse(event.data as string);
 
-					if (data.type === "cursor-update") {
+					if (data.type === "cursor_update") {
 						const { userId, x, y } = data.payload as unknown as {
 							userId: string;
 							x: number;
@@ -59,7 +56,7 @@ const routes = app
 						server.publish(
 							topic,
 							JSON.stringify({
-								type: "cursor-update",
+								type: "cursor_update",
 								payload: {
 									userId,
 									x,
@@ -89,4 +86,4 @@ const routes = app
 	);
 
 export type AppType = typeof routes;
-export { server };
+export { server, routes };

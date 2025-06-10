@@ -40,7 +40,7 @@ function App() {
 	const { data: todo } = useSuspenseQuery(todoQueryOptions(todoId));
 	const isOwner = user?.id === todo.userId;
 	const canEdit = isOwner || todo.collaboratorPermission === "write";
-	const { cursors, sendCursorPosition } = useWebsocket(todoId, user?.id);
+	const { sendCursorPosition } = useWebsocket(todoId, user?.id);
 
 	const status = todoStatuses.find(
 		(status) => status.value === todo.status,
@@ -51,9 +51,9 @@ function App() {
 	};
 
 	return (
-		<div onMouseMove={handleMouseMove}>
+		<div className="container mx-auto py-10" onMouseMove={handleMouseMove}>
 			<section className="flex justify-between gap-4 my-12 items-center">
-				<div className="flex flex-col gap-2 ">
+				<div className="flex flex-col gap-2">
 					<Breadcrumb>
 						<BreadcrumbList>
 							<BreadcrumbItem>
@@ -73,7 +73,7 @@ function App() {
 						</h2>
 					)}
 				</div>
-				<div className="flex  items-center">
+				<div className="flex items-center gap-2">
 					<Dialog
 						dialogType="permission"
 						dialogTitle="Change permission"
@@ -85,13 +85,12 @@ function App() {
 				</div>
 			</section>
 
-			<DataTable data={todo.tasks} columns={createTaskColumns(canEdit)}>
+			<DataTable columns={createTaskColumns(canEdit)} data={todo.tasks}>
 				{canEdit ? (
 					<Dialog
 						dialogType="create"
-						openText="Create New Task"
-						dialogTitle="Create New Task"
-						dialogDescription="Fill in the fields and save to add a new task."
+						dialogTitle="Create task"
+						dialogDescription="Create a new task for this todo"
 					>
 						<TaskCreateForm todoId={todo.id} />
 					</Dialog>
@@ -99,26 +98,6 @@ function App() {
 					<p>You don't have permission to edit this list</p>
 				)}
 			</DataTable>
-
-			{Object.entries(cursors).map(([otherUserId, pos]) => {
-				if (otherUserId === user?.id) return null;
-				return (
-					<div
-						key={otherUserId}
-						style={{
-							position: "absolute",
-							left: pos.x,
-							top: pos.y,
-							width: 10,
-							height: 10,
-							backgroundColor: "red",
-							borderRadius: "50%",
-							pointerEvents: "none",
-						}}
-						title={`User ${otherUserId}`}
-					/>
-				);
-			})}
 		</div>
 	);
 }

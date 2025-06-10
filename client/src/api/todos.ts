@@ -16,26 +16,10 @@ type TodoResponse = InferResponseType<typeof $todoGet>;
 export type TodoWithTasks = Exclude<TodoResponse, { error: string }>;
 export type Todo = Omit<TodoWithTasks, "tasks">;
 
-// // --- Task Types ---
-// const $tasksPost = client.api.todos[":id"].tasks.$post;
-// export type CreateTask = InferRequestType<typeof $tasksPost>["json"] &
-// 	InferRequestType<typeof $tasksPost>["param"];
-
-// const $taskPut = client.api.todos[":id"].tasks[":taskId"].$put;
-// export type EditTask = InferRequestType<typeof $taskPut>["json"] &
-// 	InferRequestType<typeof $taskPut>["param"];
-
-// const $taskDelete = client.api.todos[":id"].tasks[":taskId"].$delete;
-// export type DeleteTask = InferRequestType<typeof $taskDelete>["param"];
-
-// Infer Task type from TodoWithTasks
-// export type Task = TodoWithTasks extends { tasks: (infer T)[] } ? T : never;
-// export type TaskWithChildren = Task & { children: TaskWithChildren[] };
-
 // --- API Functions ---
 export const todosQueryOptions = () =>
 	queryOptions({
-		queryKey: ["todos"],
+		queryKey: ["todos"] as const,
 		queryFn: async () => {
 			const res = await client.api.todos.$get();
 
@@ -48,7 +32,7 @@ export const todosQueryOptions = () =>
 
 export const todoQueryOptions = (id: string) =>
 	queryOptions({
-		queryKey: ["todo", id],
+		queryKey: ["todo", id] as const,
 		queryFn: async () => {
 			const res = await client.api.todos[":id"].$get({ param: { id } });
 

@@ -1,7 +1,5 @@
-import { zValidator } from "@hono/zod-validator";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { Hono } from "hono";
-import { z } from "zod";
 import { tasks, todos } from "../db/schema.js";
 import type { auth } from "../lib/auth.js";
 
@@ -32,19 +30,3 @@ export const tasksInsertSchema = createInsertSchema(tasks).omit({
 	todoListId: true,
 });
 export const tasksSelectSchema = createSelectSchema(tasks);
-
-// WebSocket Message Types
-export type WebSocketMessageType =
-	| "task_created"
-	| "task_updated"
-	| "task_deleted"
-	| "task_bulk_updated";
-
-export interface WebSocketMessage<T = unknown> {
-	type: WebSocketMessageType;
-	data: T;
-}
-
-export interface TaskWithChildren extends Task {
-	children: TaskWithChildren[];
-}

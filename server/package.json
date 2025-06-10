@@ -10,7 +10,8 @@
 		"db:studio": "drizzle-kit studio",
 		"db:generate": "drizzle-kit generate",
 		"db:migrate": "drizzle-kit migrate",
-		"lint": "eslint ."
+		"lint": "eslint .",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@hono/node-server": "^1.14.3",

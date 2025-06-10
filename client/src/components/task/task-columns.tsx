@@ -3,12 +3,7 @@ import type { ColumnDef } from "@tanstack/react-table";
 
 import { useBulkEditTasksMutation } from "@/api/tasks";
 import { cn, timeAgo } from "@/lib/utils";
-import {
-	ChevronDown,
-	ChevronRight,
-	CornerRightDown,
-	CornerUpLeft,
-} from "lucide-react";
+import { ChevronDown, ChevronRight } from "lucide-react";
 import { Dialog } from "../dialog";
 import { DataTableColumnHeader } from "../table/data-table-column-header";
 import { Button } from "../ui/button";
@@ -75,22 +70,45 @@ export const createTaskColumns = (canEdit: boolean): ColumnDef<Task>[] => [
 						<Checkbox
 							disabled={!canEdit}
 							className={cn(
-								!row.original.completed &&
-									row.getLeafRows().some((r) => r.original.completed) &&
-									"border-blue-500",
 								"border-gray-500",
+								row.getLeafRows().some((r) => !r.original.completed) &&
+									"border-blue-500",
 							)}
 							checked={row.original.completed}
 							onCheckedChange={(checked) => {
-								const rowsToEdit = [
-									row,
-									...row.getParentRows(),
-									...row.getLeafRows(),
-								];
-								const edits = rowsToEdit.map((r) => ({
+								// Get all rows that need to be updated
+								const rowsToEdit = new Set<typeof row>();
+
+								// Add the current row and all its children
+								rowsToEdit.add(row);
+								for (const leaf of row.getLeafRows()) {
+									rowsToEdit.add(leaf);
+								}
+
+								// If unchecking, also uncheck all parents
+								if (!checked) {
+									for (const parent of row.getParentRows()) {
+										rowsToEdit.add(parent);
+									}
+								}
+								// If checking, check parents if all their leaf nodes are/will be completed
+								else {
+									// Check each parent
+									for (const parent of row.getParentRows()) {
+										const allLeafNodes = parent.getLeafRows();
+										const allCompleted = allLeafNodes.every(
+											(leaf) => leaf.original.completed || rowsToEdit.has(leaf),
+										);
+										if (allCompleted) {
+											rowsToEdit.add(parent);
+										}
+									}
+								}
+
+								const edits = Array.from(rowsToEdit).map((r) => ({
 									id: r.original.id,
 									name: r.original.name,
-									completed: !!checked,
+									completed: checked === true,
 									parentTaskId: r.original.parentTaskId,
 								}));
 

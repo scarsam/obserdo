@@ -1,126 +1,89 @@
 import { client } from "@/api/client";
 import { queryClient } from "@/lib/react-query";
-import { useEffect, useRef, useState } from "react";
-
-type CursorPosition = {
-	userId: string;
-	x: number;
-	y: number;
-};
+import { stringToColor } from "@/lib/utils";
+import { useEffect, useRef } from "react";
 
 export const useWebsocket = (todoId: string, userId?: string) => {
 	const wsRef = useRef<WebSocket | null>(null);
-	const hasConnected = useRef(false);
 
-	const [cursors, setCursors] = useState<
-		Record<string, { x: number; y: number }>
-	>({});
-
-	// Ref to accumulate incoming cursor updates before batching
-	const pendingCursorUpdates = useRef<Record<string, { x: number; y: number }>>(
-		{},
-	);
-
-	// Ref for requestAnimationFrame ID
-	const rafId = useRef<number | null>(null);
-
-	// Function to batch and apply cursor updates once per animation frame
-	const processCursorUpdates = () => {
-		setCursors((prev) => {
-			let changed = false;
-			const newCursors = { ...prev };
-
-			for (const userId in pendingCursorUpdates.current) {
-				const { x, y } = pendingCursorUpdates.current[userId];
-				if (
-					!newCursors[userId] ||
-					newCursors[userId].x !== x ||
-					newCursors[userId].y !== y
-				) {
-					newCursors[userId] = { x, y };
-					changed = true;
-				}
-			}
-
-			// Clear accumulated updates after processing
-			pendingCursorUpdates.current = {};
-			rafId.current = null;
-
-			return changed ? newCursors : prev;
-		});
-	};
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: processCursorUpdatesbiomelint re-renders
 	useEffect(() => {
-		if (hasConnected.current) return;
-		hasConnected.current = true;
+		let ws: WebSocket | null = null;
 
-		const setupWebSocket = async () => {
+		const connect = async () => {
 			try {
-				const websocket = await client.ws.$ws({
-					query: { todoId },
-				});
+				ws = await client.ws.$ws({ query: { todoId } });
+				wsRef.current = ws;
 
-				wsRef.current = websocket;
-
-				websocket.onmessage = (event: MessageEvent) => {
+				ws.onmessage = (event) => {
 					const data = JSON.parse(event.data);
+					if (data.type === "cursor_update") {
+						const { userId: otherUserId, x, y } = data.payload;
 
-					if (data.type === "cursor-update") {
-						const {
-							userId: otherUserId,
-							x,
-							y,
-						} = data.payload as CursorPosition;
+						if (otherUserId === userId) return;
 
-						// Accumulate cursor positions
-						pendingCursorUpdates.current[otherUserId] = { x, y };
-
-						// Schedule batched state update per animation frame
-						if (rafId.current === null) {
-							rafId.current = requestAnimationFrame(processCursorUpdates);
+						let cursor = document.getElementById(`cursor-${otherUserId}`);
+						if (!cursor) {
+							cursor = document.createElement("div");
+							cursor.id = `cursor-${otherUserId}`;
+							const color = stringToColor(otherUserId);
+							cursor.style.cssText = `
+								position: fixed;
+								width: 16px;
+								height: 16px;
+								background: ${color};
+								border: 2px solid white;
+								border-radius: 50%;
+								box-shadow: 0 0 6px ${color}99; /* semi-transparent shadow */
+								pointer-events: none;
+								z-index: 9999;
+								transform: translate(-50%, -50%);
+								transition: left 0.1s ease-out, top 0.1s ease-out;
+							`;
+							document.body.appendChild(cursor);
 						}
-					}
-
-					if (data.type === "todo-update") {
+						cursor.style.left = `${x}px`;
+						cursor.style.top = `${y}px`;
+					} else {
 						queryClient.invalidateQueries({ queryKey: ["todo", todoId] });
 					}
 				};
+
+				ws.onclose = () => {
+					// Remove all cursors
+					const cursors = document.querySelectorAll('[id^="cursor-"]');
+					for (const cursor of cursors) {
+						cursor.remove();
+					}
+					setTimeout(connect, 1000);
+				};
 			} catch (error) {
-				console.error("Failed to establish WebSocket connection:", error);
+				console.error("WebSocket error:", error);
+				setTimeout(connect, 1000);
 			}
 		};
 
-		setupWebSocket();
+		connect();
 
 		return () => {
-			if (wsRef.current) {
-				wsRef.current.close();
-				wsRef.current = null;
-				hasConnected.current = false;
+			const cursors = document.querySelectorAll('[id^="cursor-"]');
+			for (const cursor of cursors) {
+				cursor.remove();
 			}
-
-			// Cancel any pending animation frame on unmount
-			if (rafId.current !== null) {
-				cancelAnimationFrame(rafId.current);
-			}
+			ws?.close();
 		};
-	}, [todoId]);
+	}, [todoId, userId]);
 
-	// Send cursor position throttled (optional, combine with throttle if you want)
 	const sendCursorPosition = (x: number, y: number) => {
-		if (!wsRef.current || !userId) return;
+		const ws = wsRef.current;
+		if (!ws || !userId || ws.readyState !== WebSocket.OPEN) return;
 
-		const message = {
-			type: "cursor-update",
-			payload: { userId, x, y },
-		};
-		wsRef.current.send(JSON.stringify(message));
+		ws.send(
+			JSON.stringify({
+				type: "cursor_update",
+				payload: { userId, x, y },
+			}),
+		);
 	};
 
-	return {
-		ws: wsRef.current,
-		cursors,
-		sendCursorPosition,
-	};
+	return { sendCursorPosition };
 };
