@@ -27,21 +27,8 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 					const data = JSON.parse(event.data);
 
 					if (data.type === "cursor_update") {
-						const { userId: otherUserId, relativeX, relativeY } = data.payload;
+						const { userId: otherUserId, x, y } = data.payload;
 						if (otherUserId === userIdRef.current) return;
-
-						// Always use document.body as the target element
-						const targetElement = document.body;
-						const rect = targetElement.getBoundingClientRect();
-
-						const absoluteX = Math.max(
-							0,
-							Math.min(window.innerWidth, rect.left + relativeX * rect.width),
-						);
-						const absoluteY = Math.max(
-							0,
-							Math.min(window.innerHeight, rect.top + relativeY * rect.height),
-						);
 
 						let cursor = document.getElementById(`cursor-${otherUserId}`);
 						if (!cursor) {
@@ -60,13 +47,11 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 								z-index: 9999;
 								transform: translate(-50%, -50%);
 								transition: left 0.1s ease-out, top 0.1s ease-out;
-								opacity: 0.8;
 							`;
 							document.body.appendChild(cursor);
 						}
-
-						cursor.style.left = `${absoluteX}px`;
-						cursor.style.top = `${absoluteY}px`;
+						cursor.style.left = `${x}px`;
+						cursor.style.top = `${y}px`;
 					} else {
 						queryClient.invalidateQueries({
 							queryKey: ["todo", todoIdRef.current],
@@ -74,18 +59,7 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 					}
 				};
 
-				ws.onerror = (error) => {
-					console.error("WebSocket error:", error);
-				};
-
-				ws.onclose = (event) => {
-					console.log("WebSocket closed:", event.code, event.reason);
-					const cursors = document.querySelectorAll('[id^="cursor-"]');
-					for (const cursor of cursors) {
-						cursor.remove();
-					}
-					setTimeout(connect, 1000);
-				};
+				// ... rest of WebSocket handlers
 			} catch (error) {
 				console.error("Failed to create WebSocket:", error);
 				setTimeout(connect, 1000);
@@ -95,10 +69,6 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 		connect();
 
 		return () => {
-			const cursors = document.querySelectorAll('[id^="cursor-"]');
-			for (const cursor of cursors) {
-				cursor.remove();
-			}
 			if (ws) {
 				ws.close();
 			}
@@ -109,22 +79,10 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 		const ws = wsRef.current;
 		if (!ws || !userIdRef.current || ws.readyState !== WebSocket.OPEN) return;
 
-		// Always use document.body as the target element
-		const targetElement = document.body;
-		const rect = targetElement.getBoundingClientRect();
-
-		// Convert absolute coordinates to relative coordinates (0-1 range)
-		const relativeX = Math.max(0, Math.min(1, (x - rect.left) / rect.width));
-		const relativeY = Math.max(0, Math.min(1, (y - rect.top) / rect.height));
-
 		ws.send(
 			JSON.stringify({
 				type: "cursor_update",
-				payload: {
-					userId: userIdRef.current,
-					relativeX,
-					relativeY,
-				},
+				payload: { userId: userIdRef.current, x, y },
 			}),
 		);
 	};
