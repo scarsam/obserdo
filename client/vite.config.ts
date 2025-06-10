@@ -12,7 +12,7 @@ export default defineConfig({
 		viteReact(),
 		tailwindcss(),
 	],
-
+	base: "/",
 	resolve: {
 		alias: {
 			"@client": path.resolve(__dirname, "./src"),
