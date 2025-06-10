@@ -42,7 +42,7 @@ describe("useWebsocket", () => {
 		const { result } = renderHook(() => useWebsocket("test-todo-id"));
 
 		act(() => {
-			result.current.sendCursorPosition(100, 200, {});
+			result.current.sendCursorPosition(100, 200);
 		});
 
 		expect(mockSend).toHaveBeenCalledWith(

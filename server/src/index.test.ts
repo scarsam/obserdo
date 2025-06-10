@@ -90,7 +90,8 @@ describe("WebSocket Server", () => {
 		await new Promise<void>((resolve) => {
 			setTimeout(() => {
 				expect(receivedMessages).toHaveLength(1);
-				expect(JSON.parse(receivedMessages[0])).toEqual({
+				// biome-ignore lint/style/noNonNullAssertion: <explanation>
+				expect(JSON.parse(receivedMessages[0]!)).toEqual({
 					type: "cursor_update",
 					payload: {
 						userId: "test-user",
