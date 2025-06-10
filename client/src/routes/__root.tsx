@@ -5,9 +5,20 @@ import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 	{
-		loader: ({ context }) =>
-			context.queryClient.ensureQueryData(anonymousAuthQueryOptions()),
+		loader: async ({ context }) => {
+			const auth = await context.queryClient.ensureQueryData(
+				anonymousAuthQueryOptions(),
+			);
+
+			return { user: auth?.user };
+		},
 		component: () => {
+			const { user } = Route.useLoaderData();
+
+			if (!user) {
+				return <p>Loading...</p>;
+			}
+
 			return (
 				<div className="min-h-screen bg-gray-100 p-12">
 					<div className="max-w-7xl m-auto">

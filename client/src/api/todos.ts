@@ -3,7 +3,6 @@ import { queryOptions, useMutation } from "@tanstack/react-query";
 import type { InferRequestType, InferResponseType } from "hono/client";
 import { client } from "./client";
 
-// --- Todo Types ---
 const $todosPost = client.api.todos.$post;
 export type CreateTodo = InferRequestType<typeof $todosPost>["json"];
 
@@ -16,7 +15,6 @@ type TodoResponse = InferResponseType<typeof $todoGet>;
 export type TodoWithTasks = Exclude<TodoResponse, { error: string }>;
 export type Todo = Omit<TodoWithTasks, "tasks">;
 
-// --- API Functions ---
 export const todosQueryOptions = () =>
 	queryOptions({
 		queryKey: ["todos"] as const,
@@ -61,7 +59,6 @@ export const editTodo = async (editTodo: EditTodo) => {
 	return res.json();
 };
 
-// Mutations
 export const useCreateTodoMutation = () =>
 	useMutation({
 		mutationFn: createTodo,

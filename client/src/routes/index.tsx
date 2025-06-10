@@ -4,13 +4,11 @@ import { DataSkeleton } from "@/components/table/data-skeleton";
 import { DataTable } from "@/components/table/data-table";
 import { todoColumns } from "@/components/todo/todo-columns";
 import { TodoCreateForm } from "@/components/todo/todo-create-form";
-import { anonymousAuthQueryOptions } from "@/lib/auth";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({
-	loader: async ({ context }) => {
-		await context.queryClient.ensureQueryData(anonymousAuthQueryOptions());
+	loader: ({ context }) => {
 		return context.queryClient.ensureQueryData(todosQueryOptions());
 	},
 	pendingComponent: () => <DataSkeleton />,
