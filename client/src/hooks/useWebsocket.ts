@@ -1,4 +1,4 @@
-import { client } from "@/api/client";
+import { wsClient } from "@/api/client";
 import { queryClient } from "@/lib/react-query";
 import { stringToColor } from "@/lib/utils";
 import { useEffect, useRef } from "react";
@@ -11,7 +11,7 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 
 		const connect = async () => {
 			try {
-				ws = await client.api.ws.$ws({ query: { todoId } });
+				ws = await wsClient.api.ws.$ws({ query: { todoId } });
 				wsRef.current = ws;
 
 				ws.onmessage = (event) => {

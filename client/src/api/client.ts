@@ -7,3 +7,9 @@ export const client = hc<AppType>(baseUrl, {
 		credentials: "include",
 	},
 });
+
+export const wsClient = hc<AppType>(baseUrl, {
+	init: {
+		credentials: "include",
+	},
+});

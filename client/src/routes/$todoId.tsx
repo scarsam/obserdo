@@ -45,13 +45,6 @@ function App() {
 	const canEdit = isOwner || todo.collaboratorPermission === "write";
 	const { sendCursorPosition } = useWebsocket(todoId, user?.id);
 
-	const directWs = new WebSocket(
-		`wss://obserdo-backend.onrender.com/api/ws?todoId=${todoId}`,
-	);
-	directWs.onopen = () => console.log("✅ Direct backend works!");
-	directWs.onmessage = (e) => console.log("✅ Direct backend message:", e);
-	directWs.onerror = (e) => console.log("❌ Direct backend failed:", e);
-
 	const status = todoStatuses.find(
 		(status) => status.value === todo.status,
 	)?.label;

@@ -29,6 +29,13 @@ if (import.meta.main) {
 }
 
 const routes = app
+	.use("*", logger())
+	.use("*", corsMiddleware)
+	.use("*", authMiddleware)
+	.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw))
+	.route("/todos", todoRouter)
+	.route("/tasks", tasksRouter)
+	.get("/health", (c) => c.json({ status: "ok" }))
 	.get(
 		"/ws",
 		upgradeWebSocket((c) => {
@@ -76,14 +83,7 @@ const routes = app
 				},
 			};
 		}),
-	)
-	.use("*", logger())
-	.use("*", corsMiddleware)
-	.use("*", authMiddleware)
-	.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw))
-	.route("/todos", todoRouter)
-	.route("/tasks", tasksRouter)
-	.get("/health", (c) => c.json({ status: "ok" }));
+	);
 
 export type AppType = typeof routes;
 export { server, routes };
