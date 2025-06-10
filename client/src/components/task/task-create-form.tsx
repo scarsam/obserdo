@@ -1,5 +1,5 @@
 import { useCreateTaskMutation } from "@/api/tasks";
-import type { Task } from "@/api/todos";
+import type { Task } from "@/api/tasks";
 import { useForm } from "@tanstack/react-form";
 import type { Row } from "@tanstack/react-table";
 import { z } from "zod/v4";

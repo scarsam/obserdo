@@ -58,7 +58,9 @@ export function DataTable<TData, TValue>({
 		},
 		onExpandedChange: setExpanded,
 		getExpandedRowModel: getExpandedRowModel(),
+		// @ts-expect-error - TODO: fix this
 		getSubRows: (row) => row?.children ?? [],
+		// @ts-expect-error - TODO: fix this
 		getRowId: (row) => row.id,
 		enableRowSelection: true,
 		onRowSelectionChange: setRowSelection,
