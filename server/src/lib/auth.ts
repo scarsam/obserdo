@@ -8,14 +8,14 @@ export const auth = betterAuth({
 		provider: "pg",
 	}),
 	plugins: [anonymous()],
-	advanced: {
-		defaultCookieAttributes: {
-			secure: true,
-			httpOnly: true,
-			sameSite: "lax",
-			domain: "obserdo.onrender.com",
-		},
-	},
+	// advanced: {
+	// 	defaultCookieAttributes: {
+	// 		secure: true,
+	// 		httpOnly: true,
+	// 		sameSite: "lax",
+	// 		domain: "obserdo.onrender.com",
+	// 	},
+	// },
 	trustedOrigins: [
 		"https://obserdo.onrender.com",
 		"https://obserdo-backend.onrender.com",
