@@ -12,14 +12,14 @@ export type DialogButtonType =
 const dialogButtons: Record<
 	DialogButtonType,
 	{
-		variant: "link" | "ghost";
+		variant: "link" | "ghost" | "default";
 		size: "lg";
 		icon?: React.ReactNode;
 		openText?: string;
 	}
 > = {
 	create: {
-		variant: "link",
+		variant: "default",
 		size: "lg",
 		icon: <CirclePlus />,
 		openText: "Create Task",

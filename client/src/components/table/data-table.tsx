@@ -24,7 +24,7 @@ import {
 	TableRow,
 } from "../ui/table";
 
-import { type PropsWithChildren, useState } from "react";
+import { useState } from "react";
 
 interface DataTableProps<TData, TValue> {
 	columns: ColumnDef<TData, TValue>[];
@@ -33,11 +33,10 @@ interface DataTableProps<TData, TValue> {
 }
 
 export function DataTable<TData, TValue>({
-	children,
 	columns,
 	data,
 	initialFilters,
-}: PropsWithChildren<DataTableProps<TData, TValue>>) {
+}: DataTableProps<TData, TValue>) {
 	const [rowSelection, setRowSelection] = useState({});
 	const [columnVisibility, setColumnVisibility] = useState<VisibilityState>({});
 	const [sorting, setSorting] = useState<SortingState>([]);
@@ -128,11 +127,6 @@ export function DataTable<TData, TValue>({
 								</TableCell>
 							</TableRow>
 						)}
-						<TableRow className="hover:bg-transparent">
-							<TableCell colSpan={columns.length} className="h-16 text-center">
-								{children}
-							</TableCell>
-						</TableRow>
 					</TableBody>
 				</Table>
 			</div>

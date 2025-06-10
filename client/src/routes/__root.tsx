@@ -6,7 +6,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 	{
 		component: () => {
 			return (
-				<div className="min-h-screen bg-gray-100 p-12">
+				<div className="min-h-screen bg-gray-100 p-3 md:p-12">
 					<div className="max-w-7xl m-auto">
 						<div className="flex items-center mb-12">
 							<div>

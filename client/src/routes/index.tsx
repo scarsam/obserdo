@@ -25,7 +25,9 @@ function App() {
 	const { data: todos } = useSuspenseQuery(todosQueryOptions());
 
 	return (
-		<DataTable data={todos} columns={todoColumns}>
+		<div className="flex flex-col gap-4">
+			<DataTable data={todos} columns={todoColumns} />
+
 			<Dialog
 				dialogType="create"
 				openText="Create New Todo"
@@ -34,6 +36,6 @@ function App() {
 			>
 				<TodoCreateForm />
 			</Dialog>
-		</DataTable>
+		</div>
 	);
 }

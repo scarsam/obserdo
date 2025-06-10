@@ -54,7 +54,7 @@ function App() {
 	};
 
 	return (
-		<div className="container mx-auto py-10" onMouseMove={handleMouseMove}>
+		<div className="container mx-auto" onMouseMove={handleMouseMove}>
 			<section className="flex justify-between gap-4 my-12 items-center">
 				<div className="flex flex-col gap-2">
 					<Breadcrumb>
@@ -88,7 +88,8 @@ function App() {
 				</div>
 			</section>
 
-			<DataTable columns={createTaskColumns(canEdit)} data={todo.tasks}>
+			<div className="flex flex-col gap-4">
+				<DataTable columns={createTaskColumns(canEdit)} data={todo.tasks} />
 				{canEdit ? (
 					<Dialog
 						dialogType="create"
@@ -98,9 +99,11 @@ function App() {
 						<TaskCreateForm todoId={todo.id} />
 					</Dialog>
 				) : (
-					<p>You don't have permission to edit this list</p>
+					<p className="text-center">
+						You don't have permission to edit this list
+					</p>
 				)}
-			</DataTable>
+			</div>
 		</div>
 	);
 }
