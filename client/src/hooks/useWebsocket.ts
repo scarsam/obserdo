@@ -56,10 +56,9 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 						queryClient.invalidateQueries({
 							queryKey: ["todo", todoIdRef.current],
 						});
+						queryClient.invalidateQueries({ queryKey: ["todos"] });
 					}
 				};
-
-				// ... rest of WebSocket handlers
 			} catch (error) {
 				console.error("Failed to create WebSocket:", error);
 				setTimeout(connect, 1000);
