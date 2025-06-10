@@ -9,15 +9,15 @@ export const auth = betterAuth({
 	}),
 	plugins: [anonymous()],
 	advanced: {
-		// crossSubDomainCookies: {
-		//   enabled: true,
-		//   domain: ".onrender.com", // 👈 NOTE: leading dot required
-		// },
+		crossSubDomainCookies: {
+			enabled: true,
+			domain: ".onrender.com", // This allows cookies to work across subdomains
+		},
 		defaultCookieAttributes: {
 			secure: true,
 			httpOnly: true,
-			sameSite: "none", // Allows CORS-based cookie sharing across subdomains
-			partitioned: true, // New browser standards will mandate this for foreign cookies
+			sameSite: "lax", // Change from "none" to "lax" for iOS compatibility
+			// Remove partitioned: true - iOS doesn't handle this well
 		},
 	},
 	trustedOrigins: [
