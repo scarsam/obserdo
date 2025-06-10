@@ -9,23 +9,17 @@ export const auth = betterAuth({
 	}),
 	plugins: [anonymous()],
 	advanced: {
-		crossSubDomainCookies: {
-			enabled: true,
-			domain: ".onrender.com", // This allows cookies to work across subdomains
-		},
 		defaultCookieAttributes: {
 			secure: true,
 			httpOnly: true,
-			sameSite: "lax", // Change from "none" to "lax" for iOS compatibility
-			// Remove partitioned: true - iOS doesn't handle this well
+			sameSite: "lax",
+			domain: "obserdo.onrender.com",
 		},
 	},
 	trustedOrigins: [
 		"https://obserdo.onrender.com",
 		"https://obserdo-backend.onrender.com",
 		"http://localhost:3000",
-		"http://localhost:3000/",
 		"http://localhost:3001",
-		"http://localhost:3001/",
 	],
 });
