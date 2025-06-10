@@ -3,10 +3,10 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"dev": "vite --port 3001",
-		"start": "vite --port 3001",
-		"build": "vite build && tsc",
-		"serve": "vite preview"
+		"dev": "bunx --bun vite --port 3001",
+		"start": "bunx --bun vite --port 3001",
+		"build": "bunx --bun vite build && tsc",
+		"serve": "bunx --bun vite preview"
 	},
 	"dependencies": {
 		"@radix-ui/react-avatar": "^1.1.10",
