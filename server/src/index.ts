@@ -15,7 +15,7 @@ const app = new Hono<{
 		user: typeof auth.$Infer.Session.user | null;
 		session: typeof auth.$Infer.Session.session | null;
 	};
-}>();
+}>().basePath("/api");
 
 let server: ReturnType<typeof Bun.serve>;
 
@@ -32,9 +32,9 @@ const routes = app
 	.use("*", logger())
 	.use("*", corsMiddleware)
 	.use("*", authMiddleware)
-	.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw))
-	.route("/api/todos", todoRouter)
-	.route("/api/tasks", tasksRouter)
+	.on(["POST", "GET"], "/auth/*", (c) => auth.handler(c.req.raw))
+	.route("/todos", todoRouter)
+	.route("/tasks", tasksRouter)
 	.get("/health", (c) => c.json({ status: "ok" }))
 	.get(
 		"/ws",

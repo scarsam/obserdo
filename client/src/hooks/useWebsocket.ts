@@ -11,7 +11,7 @@ export const useWebsocket = (todoId: string, userId?: string) => {
 
 		const connect = async () => {
 			try {
-				ws = await client.ws.$ws({ query: { todoId } });
+				ws = await client.api.ws.$ws({ query: { todoId } });
 				wsRef.current = ws;
 
 				ws.onmessage = (event) => {
