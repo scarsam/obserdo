@@ -16,12 +16,20 @@ import {
 	BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb";
 import { useWebsocket } from "@/hooks/useWebsocket";
+import { anonymousAuthQueryOptions } from "@/lib/auth";
 import { useSuspenseQuery } from "@tanstack/react-query";
-import { Link, createFileRoute, useLoaderData } from "@tanstack/react-router";
+import { Link, createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/$todoId")({
-	loader: ({ context, params: { todoId } }) => {
-		return context.queryClient.ensureQueryData(todoQueryOptions(todoId));
+	loader: async ({ context, params: { todoId } }) => {
+		const data = await context.queryClient.ensureQueryData(
+			anonymousAuthQueryOptions(),
+		);
+
+		return {
+			user: data?.user,
+			todo: context.queryClient.ensureQueryData(todoQueryOptions(todoId)),
+		};
 	},
 	pendingComponent: () => <DataSkeleton />,
 	pendingMinMs: 2000,
@@ -30,7 +38,7 @@ export const Route = createFileRoute("/$todoId")({
 });
 
 function App() {
-	const { user } = useLoaderData({ from: "__root__" });
+	const { user } = Route.useLoaderData();
 	const { todoId } = Route.useParams();
 	const { data: todo } = useSuspenseQuery(todoQueryOptions(todoId));
 	const isOwner = user?.id === todo.userId;

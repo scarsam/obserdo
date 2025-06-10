@@ -3,6 +3,7 @@ import { createAuthClient } from "better-auth/react";
 import { baseUrl } from "./env";
 
 import { queryOptions } from "@tanstack/react-query";
+import { queryClient } from "./react-query";
 
 export const authClient = createAuthClient({
 	/** The base URL of the server (optional if you're using the same domain) */
@@ -14,10 +15,13 @@ export const anonymousAuthQueryOptions = () =>
 	queryOptions({
 		queryKey: ["auth", "anonymous"],
 		queryFn: async () => {
-			const { data: session } = await authClient.getSession();
+			let { data: session } = await authClient.getSession();
 
 			if (!session?.user) {
 				await authClient.signIn.anonymous();
+
+				const { data: newSession } = await authClient.getSession();
+				session = newSession;
 			}
 
 			return session;
