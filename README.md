@@ -36,12 +36,16 @@ A modern, real-time collaborative todo application built with TypeScript, featur
 
 If I had more time, I would add:
 
-- 🧪 Comprehensive test suite (unit, integration, e2e)
-- 📊 Application monitoring with Sentry
-- 📈 User analytics with Mixpanel
-- 🔐 Enhanced authentication (email/social login)
-- 📱 Progressive Web App (PWA) support
-- 🎨 Dark mode support
+- 🧪 Comprehensive test suite with Vitest (unit), Playwright (e2e), and API tests
+- 🔄 CI/CD pipeline with GitHub Actions (lint, test, build, deploy)
+- 🗄️ Database migrations with Drizzle Kit and version control
+- 🔒 Row Level Security (RLS) for multi-tenant data isolation
+- 📊 Application monitoring with OpenTelemetry and Grafana
+- 🔍 Structured logging with Pino and log aggregation
+- 🔐 Enhanced authentication with OAuth2 and JWT refresh tokens
+- 🛡️ Rate limiting and security headers with Hono middleware
+- 📈 Performance monitoring with Lighthouse CI
+- 🎨 Dark mode and theme customization
 
 ## Getting Started
 
