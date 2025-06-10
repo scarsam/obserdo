@@ -1,4 +1,4 @@
-import path from "node:path";
+import path from "path";
 import tailwindcss from "@tailwindcss/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig } from "vite";
