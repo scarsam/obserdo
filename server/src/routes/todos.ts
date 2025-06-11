@@ -1,5 +1,5 @@
 import { zValidator } from "@hono/zod-validator";
-import { server } from "@server/index.js";
+import { serverManager } from "../lib/server.js";
 import { buildTaskTree } from "@server/utils/task-tree-builder.js";
 import { and, asc, eq } from "drizzle-orm";
 import { Hono } from "hono";
@@ -87,15 +87,13 @@ const app = new Hono<TodoContext>()
 			.where(eq(todosSchema.id, todo.id))
 			.returning();
 
-		if (server) {
-			server.publish(
-				`todo-${todo.id}`,
-				JSON.stringify({
-					type: "todo_updated",
-					data: updatedTodo[0],
-				}),
-			);
-		}
+		serverManager.publish(
+			`todo-${todo.id}`,
+			JSON.stringify({
+				type: "todo_updated",
+				data: updatedTodo[0],
+			}),
+		);
 
 		return c.json(updatedTodo[0]);
 	})

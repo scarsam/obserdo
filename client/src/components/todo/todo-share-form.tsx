@@ -20,7 +20,7 @@ export const TodoShareForm = ({
 }: {
 	todo: Todo;
 }) => {
-	const mutation = useEditTodoMutation();
+	const mutation = useEditTodoMutation(todo.id);
 
 	const form = useForm({
 		defaultValues: {

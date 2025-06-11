@@ -96,7 +96,7 @@ export const useCreateTodoMutation = () =>
 		},
 	});
 
-export const useEditTodoMutation = () =>
+export const useEditTodoMutation = (todoId: string) =>
 	useMutation({
 		mutationFn: editTodo,
 		onMutate: async (newTodo) => {
@@ -129,5 +129,8 @@ export const useEditTodoMutation = () =>
 		},
 		onSettled: () => {
 			queryClient.invalidateQueries({ queryKey: ["todos"] });
+			queryClient.invalidateQueries({
+				queryKey: ["todo", todoId],
+			});
 		},
 	});

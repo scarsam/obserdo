@@ -4,8 +4,10 @@ import { Hono } from "hono";
 import { db } from "../db/index.js";
 import { tasks as tasksSchema, todos as todosSchema } from "../db/schema.js";
 
-import { server } from "../index.js";
 import { type TodoContext, tasksInsertSchema } from "../utils/types.js";
+import { serverManager } from "../lib/server.js";
+
+const server = serverManager.getServer();
 
 const app = new Hono<TodoContext>()
 	.post("/:todoId/tasks", zValidator("json", tasksInsertSchema), async (c) => {
@@ -41,15 +43,13 @@ const app = new Hono<TodoContext>()
 				})
 				.returning();
 
-			if (server) {
-				server.publish(
-					`todo-${todo.id}`,
-					JSON.stringify({
-						type: "task_created",
-						data: createdTask[0],
-					}),
-				);
-			}
+			serverManager.publish(
+				`todo-${todo.id}`,
+				JSON.stringify({
+					type: "task_created",
+					data: createdTask[0],
+				}),
+			);
 
 			return c.json(createdTask[0]);
 		} catch (error) {
@@ -130,15 +130,13 @@ const app = new Hono<TodoContext>()
 				return updates;
 			});
 
-			if (server) {
-				server.publish(
-					`todo-${todo.id}`,
-					JSON.stringify({
-						type: "task_bulk_updated",
-						data: updatedTasks,
-					}),
-				);
-			}
+			serverManager.publish(
+				`todo-${todo.id}`,
+				JSON.stringify({
+					type: "task_bulk_updated",
+					data: updatedTasks,
+				}),
+			);
 
 			return c.json(updatedTasks);
 		},
@@ -175,15 +173,13 @@ const app = new Hono<TodoContext>()
 				)
 				.returning();
 
-			if (server) {
-				server.publish(
-					`todo-${todo.id}`,
-					JSON.stringify({
-						type: "task_updated",
-						data: updatedTask[0],
-					}),
-				);
-			}
+			serverManager.publish(
+				`todo-${todo.id}`,
+				JSON.stringify({
+					type: "task_updated",
+					data: updatedTask[0],
+				}),
+			);
 
 			return c.json(updatedTask[0]);
 		},
@@ -225,15 +221,13 @@ const app = new Hono<TodoContext>()
 				.where(eq(todosSchema.id, todoId));
 		}
 
-		if (server) {
-			server.publish(
-				`todo-${todo.id}`,
-				JSON.stringify({
-					type: "task_deleted",
-					data: deletedTask[0],
-				}),
-			);
-		}
+		serverManager.publish(
+			`todo-${todo.id}`,
+			JSON.stringify({
+				type: "task_deleted",
+				data: deletedTask[0],
+			}),
+		);
 
 		return c.json(deletedTask[0]);
 	});
