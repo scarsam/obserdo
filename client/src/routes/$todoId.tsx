@@ -75,9 +75,10 @@ function App() {
 							Description: {todo.description}
 						</h2>
 					)}
-				</div>
+				</div>{" "}
 				<div className="flex items-center gap-2">
 					<Dialog
+						disabled={!isOwner}
 						dialogType="permission"
 						dialogTitle="Change permission"
 						dialogDescription="Change the permission of this todo"
